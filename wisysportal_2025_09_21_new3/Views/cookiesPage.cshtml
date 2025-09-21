@@ -1,0 +1,85 @@
+﻿@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+	Layout = "layout.cshtml";
+}
+
+@using System.Globalization
+@{
+    Layout = "layout.cshtml";
+    var culture = new CultureInfo("ar-SA");
+    var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(3));
+    var temp = 26;
+}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>سياسة ملفات تعريف الارتباط</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+<style>
+:root{--primary:#6b4bbf;--primary2:#7a57d6;--bg:#f1f3f6;--surface:#fff;--muted:#6c7382;--r-lg:1.75rem}
+body{font-family:"Tajawal",system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:var(--bg);color:#1e2330}
+.topbar{background:#fff;border-bottom:1px solid rgba(0,0,0,.06);font-size:.92rem}
+.badge-soft{background:rgba(123,97,255,.12);color:#5b4bf0;border:1px solid rgba(123,97,255,.25)}
+.page-hero{background:linear-gradient(180deg,var(--primary) 0,var(--primary2) 100%);color:#fff;padding:1.25rem 0 3rem}
+.page-hero a{color:#efeaff;text-decoration:none}
+.surface{background:var(--surface);border-radius:var(--r-lg);box-shadow:0 .6rem 2rem rgba(16,22,34,.08);margin-top:-2rem;padding:2rem;border:1px solid rgba(0,0,0,.04)}
+.h-rule{height:6px;width:74px;background:#6b4bbf;border-radius:12px;margin-top:.25rem}
+.footer{color:#7b8a9b}.social a{width:36px;height:36px;border-radius:999px;border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#5e6b7b}
+ul li{margin-bottom:.35rem}
+</style>
+</head>
+<body>
+<div class="topbar py-2">
+  <div class="container d-flex align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <a class="badge rounded-pill badge-soft px-3 py-2" href="#"><i class="bi bi-box-arrow-in-right ms-1"></i>تسجيل الدخول</a>
+      <a class="text-decoration-none small" href="#"><i class="bi bi-globe2 ms-1"></i>English</a>
+    </div>
+    <div class="text-muted small d-flex align-items-center gap-3">
+      <span class="d-none d-sm-inline"><i class="bi bi-geo-alt ms-1"></i>Riyadh - KSA</span>
+      <span><i class="bi bi-thermometer-sun ms-1"></i>@temp°</span>
+      <span class="text-body-secondary">@now.ToString("yyyy/MM/dd HH:mm", culture)</span>
+    </div>
+  </div>
+</div>
+
+
+<main class="container">
+  <div class="surface">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h1 class="h3 fw-bolder mb-0">سياسة ملفات تعريف الارتباط</h1>
+      <div class="h-rule"></div>
+    </div>
+
+    <p>توضح هذه السياسة كيف نستخدم ملفات تعريف الارتباط (الكوكيز) وأغراضها لتحسين تجربتك.</p>
+
+    <h5 class="fw-bold mt-4">1. ما هي ملفات تعريف الارتباط؟</h5>
+    <p>ملفات نصية صغيرة تُخزَّن على جهازك عند زيارة مواقع الويب، وتُستخدم لتذكر تفضيلاتك وفهم كيفية استخدامك للموقع.</p>
+
+    <h5 class="fw-bold mt-4">2. كيف نستخدمها</h5>
+    <ul>
+      <li>ملفات أساسية لازمة لتشغيل الموقع وتسجيل الدخول.</li>
+      <li>ملفات أداء لقياس الاستخدام وتحسين السرعة.</li>
+      <li>ملفات تفضيلات لتذكر الإعدادات واللغة.</li>
+      <li>ملفات تحليل لفهم تفاعل المستخدمين مع المحتوى.</li>
+    </ul>
+
+    <h5 class="fw-bold mt-4">3. أنواع ملفات تعريف الارتباط</h5>
+    <ul>
+      <li>جلسة/مؤقتة: تُحذف عند إغلاق المتصفح.</li>
+      <li>دائمة: تبقى لفترة محددة لتذكر الإعدادات.</li>
+      <li>أطراف ثالثة: مقدمة من مزودي تحليلات وخدمات مدمجة.</li>
+    </ul>
+
+    <h5 class="fw-bold mt-4">4. كيفية التحكم</h5>
+    <p>يمكنك تعديل الإعدادات من المتصفح لحظر أو حذف ملفات الارتباط. قد يؤدي ذلك لتقييد بعض الوظائف.</p>
+
+    <h5 class="fw-bold mt-4">5. التغييرات على السياسة</h5>
+    <p>قد نحدّث هذه السياسة دورياً. سننشر النسخة المحدثة مع تاريخ النفاذ على هذه الصفحة.</p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

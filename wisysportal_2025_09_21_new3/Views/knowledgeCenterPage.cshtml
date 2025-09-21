@@ -1,0 +1,266 @@
+﻿@using System.Globalization
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Cms.Core.Models
+@using Umbraco.Models
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<KnowledgeCenterModel>
+
+@{
+    Layout = "layout.cshtml";
+
+    var ui = CultureInfo.CurrentUICulture;
+    var isAr = ui.TwoLetterISOLanguageName.Equals("ar", StringComparison.OrdinalIgnoreCase);
+    var dir = isAr ? "rtl" : "ltr";
+
+    string L(string ar, string en) => isAr ? ar : en;
+    var pageTitle = L("مركز المعرفة", "Knowledge Center");
+    var tabCourses = L("دورات تدريبية", "Courses");
+    var tabVideos = L("فيديوهات تعليمية", "Videos");
+    var lblCategory = L("التصنيف", "Category");
+    var btnStart = L("ابدأ الآن", "Start Now");
+    var btnWatch = L("شاهد الفيديو", "Watch Video");
+    var tFilter = L("فلترة", "Filter");
+    var filterAll = L("الكل", "All");
+
+    var courseCards = Model.Courses?.Select(b => b.Content).OfType<KnowledgeCard>() ?? Enumerable.Empty<KnowledgeCard>();
+    var videoCards = Model.Videos?.Select(b => b.Content).OfType<KnowledgeCard>() ?? Enumerable.Empty<KnowledgeCard>();
+
+    var categoryKeys = courseCards.Select(c => c.Category)
+        .Concat(videoCards.Select(v => v.Category))
+        .Where(s => !string.IsNullOrWhiteSpace(s))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .OrderBy(s => s, StringComparer.CurrentCultureIgnoreCase)
+        .ToList();
+
+    var catMap = categoryKeys.ToDictionary(
+        k => k,
+        k =>
+        {
+            var v = Umbraco.GetDictionaryValue(k);
+            return string.IsNullOrWhiteSpace(v) ? k : v;
+        },
+        StringComparer.OrdinalIgnoreCase
+    );
+
+    string Cat(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return "";
+        return catMap.TryGetValue(key, out var val) ? val : (Umbraco.GetDictionaryValue(key) ?? key);
+    }
+}
+
+<section class="kc container-fluid px-sm-4 pb-3 pb-md-5" dir="@dir">
+    <div class="kc__head d-flex align-items-center justify-content-between mb-3 mb-md-4">
+        <h2 class="h4 fw-bold mb-0 @(isAr ? "text-end" : "text-start")">@(!string.IsNullOrWhiteSpace(Model.Title) ? Model.Title : pageTitle)</h2>
+
+        @if (categoryKeys.Any())
+        {
+            <div class="kc-filter input-group w-auto">
+
+                <button class="kc-filter__btn btn dropdown-toggle rounded-5"
+                        type="button" data-bs-toggle="dropdown" aria-expanded="false" id="kcCatBtn">
+                    <i class="bi bi-chevron-down"></i>
+                    <span id="kcCatBtnTxt">@filterAll</span>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end text-center" id="kcCatMenu" aria-labelledby="kcCatBtn">
+                    <li><a class="dropdown-item active" href="#" data-cat="*" data-no-swup>@filterAll</a></li>
+                    @foreach (var key in categoryKeys)
+                    {
+                        <li><a class="dropdown-item" href="#" data-cat="@key" data-no-swup>@Cat(key)</a></li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+
+    <!-- Tabs -->
+    <ul class="kc-tabs nav" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-videos" data-bs-toggle="tab" data-bs-target="#pane-videos" type="button" role="tab">@tabVideos</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-courses" data-bs-toggle="tab" data-bs-target="#pane-courses" type="button" role="tab">@tabCourses</button>
+        </li>
+
+    </ul>
+
+    <div class="tab-content mt-3">
+        <!-- COURSES (no thumbnail) -->
+        <div class="tab-pane fade show active" id="pane-courses" role="tabpanel" aria-labelledby="tab-courses">
+            @if (!courseCards.Any())
+            {
+                <div class="alert alert-light border-0 text-muted">@L("لا توجد دورات حالياً.", "No courses yet.")</div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var card in courseCards)
+                    {
+                        var link = card.Link;
+                        var url = link?.Url ?? "#";
+                        var target = string.IsNullOrWhiteSpace(link?.Target) ? "_blank" : link.Target;
+                        var rel = target == "_blank" ? "noopener noreferrer" : null;
+                        var catKey = card.Category ?? "";
+
+
+                        <div class="kc-course k-item py-4" data-kind="course" data-title="@card.Title" data-cat="@catKey">
+                            <div class="d-flex flex-wrap align-items-center gap-3  ms-1 ms-md-0">
+
+                                <!-- title + category -->
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="fw-semibold text-truncate">@card.Title</div>
+                                    @if (!string.IsNullOrWhiteSpace(catKey))
+                                    {
+                                        <div class="small text-muted text-truncate">@lblCategory: @Cat(catKey)</div>
+                                    }
+                                </div>
+
+                                <!-- action button (stays at row end; wraps below on very narrow screens) -->
+                                @if (!string.IsNullOrWhiteSpace(link?.Url))
+                                {
+                                    <a class="btn btn-primary rounded-pill px-4 d-inline-flex align-items-center gap-2 ms-auto"
+                                       href="@url" target="@target" rel="@rel" data-no-swup>
+                                        <span>@btnStart</span>
+                                        <i class="bi @(isAr ? "bi-arrow-left" : "bi-arrow-right")"></i>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-secondary rounded-pill px-4 d-inline-flex align-items-center gap-2 ms-auto" disabled>
+                                        <i class="bi bi-slash-circle"></i><span>@btnStart</span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- VIDEOS (thumbnail) -->
+        <div class="tab-pane fade" id="pane-videos" role="tabpanel" aria-labelledby="tab-videos">
+            @if (!videoCards.Any())
+            {
+                <div class="alert alert-light border-0 text-muted">@L("لا توجد فيديوهات حالياً.", "No videos yet.")</div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var card in videoCards)
+                    {
+                        var link = card.Link;
+                        var url = link?.Url ?? "#";
+                        var target = string.IsNullOrWhiteSpace(link?.Target) ? "_blank" : link.Target;
+                        var rel = target == "_blank" ? "noopener noreferrer" : null;
+                        var media = card.Value<MediaWithCrops>("thumbnail");
+                        var imgUrl = media?.GetCropUrl(width: 960, height: 540, quality: 80, furtherOptions: "&upscale=false")
+                        ?? "/assets/img/placeholder-16x9.jpg";
+                        var catKey = card.Category ?? "";
+
+                        <div class="col-12 col-md-6 col-xl-4 d-flex k-item" data-kind="video" data-title="@card.Title" data-cat="@catKey">
+                            <article class="kc-card w-100 h-100">
+                                <div class="kc-thumb ratio ratio-16x9">
+                                    <img src="@imgUrl" alt="@card.Title" loading="lazy" decoding="async" />
+                                    @if (!string.IsNullOrWhiteSpace(link?.Url))
+                                    {
+                                        <a class="kc-hit stretched-link" href="@url" target="@target" rel="@rel" aria-label="@btnWatch" data-no-swup></a>
+                                    }
+                                    <span class="kc-play"><i class="bi bi-play-fill"></i></span>
+                                </div>
+                                <div class="kc-body">
+                                    <div class="kc-title">@card.Title</div>
+                                    @if (!string.IsNullOrWhiteSpace(catKey))
+                                    {
+                                        <div class="kc-meta">@lblCategory: @Cat(catKey)</div>
+                                    }
+                                </div>
+                            </article>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+
+@section Scripts {
+    <script>
+        (() => {
+          // ---- DOM refs ----
+          const menu      = document.getElementById('kcCatMenu');
+          const btnTxt    = document.getElementById('kcCatBtnTxt');
+          const tabBtns   = document.querySelectorAll('.kc-tabs .nav-link');
+          const tabCoursesBtn = document.getElementById('tab-courses');
+          const tabVideosBtn  = document.getElementById('tab-videos');
+
+          // ---- helpers ----
+          const toKey        = (s='') => s.trim().toLowerCase();
+          const getChosenCat = () => (menu?.querySelector('.dropdown-item.active')?.getAttribute('data-cat')) || '*';
+
+          // For videos the .k-item is the column itself; for courses it's the row item. This handles both.
+          function getHost(el) {
+            return el.closest('.col-12, .col-md-6, .col-xl-4') || el;
+          }
+
+          function applyFilterAllPanes() {
+              debugger;
+            const chosen = toKey(getChosenCat());
+
+
+            document.querySelectorAll('#pane-courses, #pane-videos').forEach(pane => {
+              pane.querySelectorAll('.k-item').forEach(el => {
+                const key   = toKey(el.getAttribute('data-cat') || '');
+                const match = (chosen === '*' || key === chosen);
+                const host  = getHost(el);
+                host.style.display = match ? '' : 'none';
+              });
+            });
+          }
+
+          // ---- category dropdown ----
+          if (menu && btnTxt) {
+            menu.addEventListener('click', (e) => {
+              const a = e.target.closest('[data-cat]');
+              if (!a) return;
+              e.preventDefault();
+              menu.querySelectorAll('.dropdown-item').forEach(x => x.classList.remove('active'));
+              a.classList.add('active');
+              btnTxt.textContent = a.textContent.trim();
+              applyFilterAllPanes();
+            });
+          }
+
+          // ---- default tab from ?q= ----
+          const params = new URLSearchParams(window.location.search);
+          const q = toKey(params.get('q') || '');
+
+          function showTab(btn) {
+            if (!btn) return;
+            new bootstrap.Tab(btn).show();
+          }
+          if (q === 'videos') showTab(tabVideosBtn); else showTab(tabCoursesBtn);
+
+          // Keep URL in sync and re-apply filter on tab change
+          tabBtns.forEach(btn => {
+            btn.addEventListener('shown.bs.tab', (e) => {
+              const val = (e.target.id === 'tab-videos') ? 'videos' : 'courses';
+              const url = new URL(window.location);
+              url.searchParams.set('q', val);
+              history.replaceState({}, '', url);
+              applyFilterAllPanes();
+            });
+          });
+
+          // Ensure the first menu item (*) is active if nothing is selected yet
+          if (menu && !menu.querySelector('.dropdown-item.active')) {
+            const first = menu.querySelector('.dropdown-item');
+            if (first) first.classList.add('active');
+          }
+
+          // Initial run after Bootstrap applies tab classes
+          requestAnimationFrame(applyFilterAllPanes);
+        })();
+    </script>
+}

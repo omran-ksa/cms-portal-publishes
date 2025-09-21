@@ -1,0 +1,22 @@
+/* Swup transition layer */
+.swup-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 9999;
+    transform: translateX(-400%);
+    transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+    pointer-events: none;
+    /* Active class for entering animation */
+    &.swup-transition-enter {
+        transform: translateX(0);
+    }
+
+    /* Active class for exiting animation */
+    &.swup-transition-exit {
+        transform: translateX(400%);
+    }
+}

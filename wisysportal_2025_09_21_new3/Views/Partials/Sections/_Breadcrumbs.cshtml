@@ -1,0 +1,54 @@
+﻿@using System.Globalization
+@using Wisys.CMS.UI.Breadcrumbs
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<BreadcrumbContext>
+
+@{
+
+    // Culture detection (aligned with your existing pattern)
+    var currentLang = (ViewData["CurrentLang"] as string)
+                      ?? (TempData.Peek("CurrentLang") as string)
+                      ?? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+    var ui = currentLang?.StartsWith("ar", StringComparison.OrdinalIgnoreCase) == true
+        ? new CultureInfo("ar")
+        : new CultureInfo("en");
+
+    var isAr = ui.TwoLetterISOLanguageName == "ar";
+    var ctx = Model ?? new BreadcrumbContext();
+    var items = ctx.Items ?? new List<BreadcrumbItem>();
+    var showHome = !ctx.HideHome;
+
+    // Insert Home at beginning if requested and not already present
+    if (showHome && (items.Count == 0 || !string.Equals(items[0].Url, ctx.HomeUrl, StringComparison.OrdinalIgnoreCase)))
+    {
+        items.Insert(0, new BreadcrumbItem
+        {
+            Title = ctx.HomeTitle ?? (isAr ? "الرئيسية" : "Home"),
+            Url = ctx.HomeUrl ?? "/",
+            Active = false
+        });
+    }
+
+}
+
+<nav class="container-fluid  my-4 px-sm-4" aria-label="@ctx.AriaLabel">
+    <ol class="breadcrumb m-0 @((isAr ? "justify-content-start " : "justify-content-start "))" dir="@(isAr ? "rtl" : "ltr")" style="max-width:90vw; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+        @for (int i = 0; i < items.Count; i++)
+        {
+            var it = items[i];
+            var isLast = i == items.Count - 1;
+            if (isLast || it.Active)
+            {
+                <li class="breadcrumb-item active" aria-current="page">
+                    <span class="text-truncate d-inline-block fw-bold">@it.Title</span>
+                </li>
+            }
+            else
+            {
+                <li class="breadcrumb-item">
+                    <a href="@(it.Url ?? "#")" class="text-decoration-none" style="font-size:1rem">@it.Title</a>
+                </li>
+            }
+        }
+    </ol>
+</nav>

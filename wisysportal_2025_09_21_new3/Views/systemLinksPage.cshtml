@@ -1,0 +1,86 @@
+﻿@using System.Globalization;
+@using Umbraco.Cms.Core.Models.Blocks;
+@using Umbraco.Models;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage;
+
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback;
+
+@{
+    Layout = "layout.cshtml";
+
+    // culture / dir
+    var ui = CultureInfo.CurrentUICulture;
+    var isAr = ui.TwoLetterISOLanguageName == "ar";
+    var dir = isAr ? "rtl" : "ltr";
+
+    string pageTitle = isAr ? "الخدمات الالكترونية" : "E-Services";
+    string homeText = isAr ? "الرئيسية" : "Home";
+
+    // get blocks (CHANGE alias if needed)
+    var blocks = Model.Value<BlockListModel>("Links") ?? BlockListModel.Empty;
+
+    //construct items using the injected PublishedValueFallback
+    var items = blocks
+        .Select(b => new SystemLinkItem(b.Content, PublishedValueFallback))
+        .Where(x => x.IsVisible)
+        .ToList();
+}
+
+
+
+<main class="container-fluid px-sm-4  pb-4 pb-md-5" dir="@dir">
+    <div class="d-flex align-items-center justify-content-between mb-3 mb-md-4">
+        <h2 class="h4 fw-bold mb-0 @(isAr ? "text-end" : "text-start")">@pageTitle</h2>
+    </div>
+
+    <!-- Grid -->
+    <!-- Grid -->
+    <div class="row g-3 g-md-5 justify-content-center">
+        @foreach (var it in items)
+        {
+            var link = it.Link;
+            var href = link?.Url ?? "#";
+            var target = (link?.Target?.ToLowerInvariant() == "_blank") ? "_blank" : "_self";
+            var rel = target == "_blank" ? "noopener" : "";
+            var imgUrl = it.Image?.GetCropUrl() ?? "";
+
+            <div class="col-12 col-md-6 col-xl-3 d-flex " >
+
+                <div class="card shadow-sm border-0 rounded-4 w-100">
+                    <div class="card-body  d-flex flex-column gap-5" style="min-height:112px;background-color:#FCFCFD">
+                        
+                            <a href="@href"
+                               target="@target">
+                        <!-- Row 1: Logo (centered, full width) -->
+                        <div class="d-flex justify-content-center">
+                            <div class="d-flex align-items-center justify-content-center bg-light-subtle rounded-3 px-3"
+                                 style="height:70px; min-width:170px;">
+                                @if (!string.IsNullOrEmpty(imgUrl))
+                                {
+                                    <img src="@imgUrl" alt="@it.Title" class="img-fluid" style="max-height:60px; width:auto;">
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Title + Arrow (RTL/LTR aware) -->
+                        <div class="position-relative text-center my-2">
+                            <div class="fw-semibold text-body h6 m-0">@it.Title</div>
+
+                            <a href="@href"
+                               target="@target"
+                               rel="@rel"
+                               class="btn btn-outline-primary rounded-circle d-inline-flex align-items-center justify-content-center position-absolute top-50 translate-middle-y @(isAr ? "start-0" : "end-0")"
+                               style="width:40px;height:40px"
+                               aria-label="@it.Title" data-no-swup>
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+                        </div>
+                               </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+
+</main>

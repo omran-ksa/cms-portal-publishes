@@ -1,0 +1,25 @@
+.login-page {
+
+
+    .welcome-section {
+        background-color: #F1EEF6;
+
+        .lang-btn {
+            transform: translate(1rem, 1rem);
+        }
+    }
+
+    .login-section {
+        background-color: #F1EEF6;
+    }
+}
+
+
+.login-btn:focus,
+.login-btn:focus-visible {
+    outline: none; // remove default outline
+    border-color: #F1EEF6; // custom border
+    background-color: rgba(#F1EEF6, 0.1); // subtle background tint
+    box-shadow: 0 0 0 0.25rem rgba(#F1EEF6, 0.35); // focus ring
+    color: #F1EEF6; // text color
+}

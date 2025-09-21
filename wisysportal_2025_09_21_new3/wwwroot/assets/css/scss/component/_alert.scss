@@ -1,0 +1,91 @@
+alert {
+    position: fixed;
+    z-index: 11;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+
+    &.hide {
+        display: none;
+    }
+
+    &::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        background-color: #312244;
+        opacity: 0.25; // Corrected opacity value
+        content: ''; // Required for pseudo-elements to render
+    }
+}
+
+[role="alert"] {
+    position: relative;
+    align-self: center;
+    place-self: center;
+    background-color: $color-Primary-50;
+    border-radius: toRem(15px);
+    padding: toRem(50px) toRem(100px);
+
+    .close{
+        position: absolute;
+        top: toRem(25px);
+        left: toRem(25px);
+        display: flex;
+        width: toRem(40px);
+        height: toRem(40px);
+        border-radius: toRem(150px);
+        background-color: $color-Neutral-400;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 15;
+        svg{
+            color: $color-Neutral-700;
+        }
+    }
+
+    .body{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: toRem(16px);
+        
+        .icon{
+            align-content: center;
+            align-self: center;
+            text-align: center;
+            width: toRem(90px);
+            height: toRem(90px);
+            border-radius: toRem(150px);
+            background-color: $color-Primary-100;
+            svg{
+                padding-top: toRem(4px);
+                padding-left: toRem(4px);
+                height: toRem(32px);
+                color: $color-Primary-500;
+            }
+        }
+    }
+
+    &[success="false"]{
+        .body{
+            .icon{
+                background-color: $color-Red-100;
+                svg{
+                    color: $color-Red-500;
+                }
+            }
+        }
+    }
+
+    &.popup{
+        z-index: 11;
+    }
+}

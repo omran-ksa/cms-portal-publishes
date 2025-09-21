@@ -1,0 +1,57 @@
+﻿@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using System.Globalization
+
+@{
+    Layout = null;
+}
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="@(GetCultureTwoLetterCode)">
+
+<head>
+    @await Html.PartialAsync("~/Views/Partials/Layout/MetaData.cshtml")
+    @await Html.PartialAsync("~/Views/Partials/Layout/Styles.cshtml")
+    @await RenderSectionAsync("Styles", required: false)
+
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>الشركة الوطنية لنظم المعلومات</title>
+
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+        @await Html.PartialAsync("~/Views/Partials/Layout/Header.cshtml")
+
+        <!-- Swup container (must exist on EVERY route) -->
+    <swup id="swup" class="transition-fade">
+
+    <main class="flex-grow-1 py-0">
+        @RenderBody()
+    </main>
+
+
+
+    @await Html.PartialAsync("~/Views/Partials/sections/StickyPrayerSection.cshtml")
+
+
+
+    </swup>
+
+    <!-- transition between pages -->
+    <div class="swup-transition"></div>
+            @await Html.PartialAsync("~/Views/Partials/Layout/Footer.cshtml")
+
+
+    @await Html.PartialAsync("~/Views/Partials/Layout/Scripts.cshtml")
+    @await RenderSectionAsync("Scripts", required: false)
+
+
+</body>
+</html>

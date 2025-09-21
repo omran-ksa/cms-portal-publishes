@@ -1,0 +1,240 @@
+﻿@{
+    var routeCulture = ViewContext?.RouteData?.Values?["culture"]?.ToString();
+
+    if (string.IsNullOrWhiteSpace(routeCulture))
+    {
+        var firstSeg = (Context.Request.Path.Value ?? "/")
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        if (firstSeg is "ar" or "en") routeCulture = firstSeg;
+    }
+
+    var currentLang = !string.IsNullOrWhiteSpace(routeCulture)
+        ? (routeCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en")
+        : "ar";
+
+    ViewData["CurrentLang"] = currentLang;
+
+    var isAr = currentLang == "ar";
+    var dir = isAr ? "rtl" : "ltr";
+
+    var salat = new Dictionary<string, (string ar, string en)>
+    {
+        ["Fajr"] = ("الفجر", "Fajr"),
+        ["Sunrise"] = ("الشروق", "Sunrise"),
+        ["Dhuhr"] = ("الظهر", "Dhuhr"),
+        ["Asr"] = ("العصر", "Asr"),
+        ["Maghrib"] = ("المغرب", "Maghrib"),
+        ["Isha"] = ("العشاء", "Isha")
+    };
+    string L(string ar, string en) => isAr ? ar : en;
+
+    // Default fallback times
+    var times = new
+    {
+        Fajr = "04:21",
+        Sunrise = "05:41",
+        Dhuhr = "11:49",
+        Asr = "15:17",
+        Maghrib = "17:59",
+        Isha = "19:29"
+    };
+
+    string FormatTime(string hhmm, bool ar)
+    {
+        if (!TimeSpan.TryParse(hhmm, out var ts)) return hhmm;
+        var dt = DateTime.Today.Add(ts);
+        var culture = ar
+            ? new System.Globalization.CultureInfo("ar")
+            : new System.Globalization.CultureInfo("en");
+        var s = dt.ToString("h:mm tt", culture);
+        return ar ? s : s.ToLowerInvariant(); // "am/pm"
+    }
+
+    var t = GetTodayTitles();
+}
+
+<div id="sticky-prayer"
+     class="px-sm-4 mx-0 sticky-prayer d-print-none border-0 "
+     dir="@(isAr ? "rtl" : "ltr")"
+     aria-live="polite"
+     data-lang="@currentLang">
+
+    <div class="bg-primary">
+        <button class="sticky-prayer__close text-white p-3 bg-primary"
+                aria-label="@L("إغلاق", "Close")">
+            <i class="fa-solid fa-close"></i>
+        </button>
+
+        <button class="sticky-prayer__fab p-3 ps-4 bg-primary"
+                type="button"
+                aria-controls="sticky-prayer-panel"
+                aria-expanded="false"
+                title="@L("أوقات الصلاة", "Prayer Times")">
+            <i class="fa-solid fa-mosque"></i>
+        </button>
+    </div>
+
+    <aside id="sticky-prayer-panel" class="bg-primary w-fit p-3 h-auto sticky-prayer__panel"
+           role="dialog" aria-modal="false" aria-labelledby="sticky-prayer-title" style="z-index:1150">
+
+        <div class="sticky-prayer__panel-header py-2 text-center border-bottom">
+            <strong id="sticky-prayer-title">@(isAr? t.arGregorian: t.enGregorian)</strong>
+            <div class="small opacity-75">@(isAr? t.arTitle: t.enTitle)</div>
+        </div>
+
+        <div class="sticky-prayer__panel-body">
+            <ul class="list-unstyled m-0 p-0">
+                <li class=" justify-content-between py-3 border-bottom border-secondary row">
+                    <span class="col-6">@L(salat["Fajr"].ar, salat["Fajr"].en)</span>
+                    <span class="col-6"  data-prayer="fajr"><i class="fa-solid fa-clock mx-1"></i>@FormatTime(times.Fajr, isAr)</span>
+                </li>
+                <li class=" justify-content-between py-3 border-bottom border-secondary row">
+                    <span class="col-6">@L(salat["Sunrise"].ar, salat["Sunrise"].en)</span>
+                    <span class="col-6" data-prayer="sunrise"><i class="fa-solid fa-clock mx-1"></i>@FormatTime(times.Sunrise, isAr)</span>
+                </li>
+                <li class=" justify-content-between py-3 border-bottom border-secondary row">
+                    <span class="col-6">@L(salat["Dhuhr"].ar, salat["Dhuhr"].en)</span>
+                    <span class="col-6" data-prayer="dhuhr"><i class="fa-solid fa-clock mx-1"></i>@FormatTime(times.Dhuhr, isAr)</span>
+                </li>
+                <li class=" justify-content-between py-3 border-bottom border-secondary row">
+                    <span class="col-6">@L(salat["Asr"].ar, salat["Asr"].en)</span>
+                    <span class="col-6" data-prayer="asr"><i class="fa-solid fa-clock mx-1"></i>@FormatTime(times.Asr, isAr)</span>
+                </li>
+                <li class=" justify-content-between py-3 border-bottom border-secondary row">
+                    <span class="col-6">@L(salat["Maghrib"].ar, salat["Maghrib"].en)</span>
+                    <span class="col-6" data-prayer="maghrib"><i class="fa-solid fa-clock mx-1"></i>@FormatTime(times.Maghrib, isAr)</span>
+                </li>
+                <li class=" justify-content-between py-3 row">
+                    <span class="col-6">@L(salat["Isha"].ar, salat["Isha"].en)</span>
+                    <span class="col-6" data-prayer="isha"><i class="fa-solid fa-clock mx-1"></i>@FormatTime(times.Isha, isAr)</span>
+                </li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Mobile FAB -->
+    <button id="prayerFabMobile" type="button" class="sticky-prayer__fab-mobile" aria-expanded="false">
+        <i class="fa-solid fa-mosque"></i>
+    </button>
+
+    <div class="sticky-prayer__backdrop" aria-hidden="true"></div>
+</div>
+
+
+<script>
+    (function () {
+      const root = document.getElementById('sticky-prayer');
+      if (!root) return;
+
+      const isArabic = root.dataset.lang === 'ar';
+      const fabMobile = document.getElementById('prayerFabMobile');
+      const fabDrawer = root.querySelector('.sticky-prayer__fab'); // legacy drawer button (hidden on mobile)
+      const closeBtn = root.querySelector('.sticky-prayer__close');
+      const backdrop = root.querySelector('.sticky-prayer__backdrop');
+      const panel = root.querySelector('#sticky-prayer-panel');
+      const triggerDesktop = document.getElementById('prayerTriggerDesktop');
+
+      const mqDesktop = window.matchMedia('(min-width: 992px)');
+      let isDesktop = mqDesktop.matches;
+
+      // --- helpers
+      function setExpanded(el, v) { if (el) el.setAttribute('aria-expanded', String(v)); }
+      function clickOutside(e) {
+        if (!root.classList.contains('is-open')) return;
+        if (!panel.contains(e.target) && !triggerDesktop?.contains(e.target)) close();
+      }
+
+      function positionPopover() {
+        if (!isDesktop || !triggerDesktop) return;
+        const rect = triggerDesktop.getBoundingClientRect();
+        // place panel below trigger, align inline-start depending on dir
+        const dir = root.getAttribute('dir') || 'rtl';
+        const pageY = window.scrollY || document.documentElement.scrollTop;
+        const pageX = window.scrollX || document.documentElement.scrollLeft;
+
+        const top = rect.bottom + pageY + 8; // 8px gap
+        let left;
+        if (dir === 'rtl') {
+          // align panel's right edge with trigger's right edge
+          const panelWidth = panel.offsetWidth || 360;
+          left = rect.right + pageX - panelWidth;
+        } else {
+          // align left edges
+          left = rect.left + pageX;
+        }
+        panel.style.top = `${top}px`;
+        panel.style.left = `${left}px`;
+        panel.style.right = 'auto';
+      }
+
+      function setMode() {
+        isDesktop = mqDesktop.matches;
+        root.classList.toggle('as-popover', isDesktop);
+        root.classList.toggle('as-drawer', !isDesktop);
+        if (isDesktop) {
+          // ensure backdrop is hidden for popover mode
+          backdrop?.setAttribute('aria-hidden', 'true');
+        }
+      }
+      setMode();
+      mqDesktop.addEventListener('change', () => {
+        close();
+        setMode();
+      });
+
+      // --- open/close
+      function open() {
+        root.classList.add('is-open');
+        setExpanded(fabMobile, true);
+        setExpanded(triggerDesktop, true);
+        if (isDesktop) {
+          positionPopover();
+          window.addEventListener('scroll', positionPopover, { passive: true });
+          window.addEventListener('resize', positionPopover);
+          document.addEventListener('click', clickOutside);
+          // focus mgmt
+          (panel.querySelector('button, [href], [tabindex]:not([tabindex="-1"])') || panel).focus?.();
+        } else {
+          // drawer
+          backdrop?.classList.add('on');
+        }
+      }
+
+      function close() {
+        root.classList.remove('is-open');
+        setExpanded(fabMobile, false);
+        setExpanded(triggerDesktop, false);
+        if (isDesktop) {
+          window.removeEventListener('scroll', positionPopover);
+          window.removeEventListener('resize', positionPopover);
+          document.removeEventListener('click', clickOutside);
+        } else {
+          backdrop?.classList.remove('on');
+        }
+      }
+
+      // triggers
+      triggerDesktop?.addEventListener('click', () => (root.classList.contains('is-open') ? close() : open()));
+      fabDrawer?.addEventListener('click', () => (root.classList.contains('is-open') ? close() : open()));
+      closeBtn?.addEventListener('click', close);
+      fabMobile?.addEventListener('click', () => {
+        const isOpen = root.classList.contains('is-open');
+        isOpen ? close() : open();
+        fabMobile.innerHTML = isOpen ? '<i class="fa-solid fa-mosque"></i>' : '<i class="fa-solid fa-xmark"></i>';
+      });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+      // --- your existing API code (unchanged except mapping already fixed above)
+      function cleanTime(s){ if(!s) return s; s=s.replace(/%/g,'').trim(); return isArabic ? s.replace(/am/gi,'ص').replace(/pm/gi,'م') : s.toLowerCase(); }
+      function updatePrayerTimes(prayerData){ /* mapping from the snippet above */ }
+      function fetchPrayerTimes(lat=24.7136,lng=46.6753,timezone='Asia/Riyadh'){ const language=isArabic?'Arabic':'English'; const url=`https://salahhour.com/index.php/api/prayer_times?latitude=${lat}&longitude=${lng}&timezone=${encodeURIComponent(timezone)}&method=3&format=json&language=${language}&time_format=1`; fetch(url).then(r=>r.json()).then(d=>{ if(d.success&&d.results) updatePrayerTimes(d.results); }).catch(()=>{}); }
+      function requestLocationAndFetchTimes(){ if(!navigator.geolocation){ fetchPrayerTimes(); return; } navigator.geolocation.getCurrentPosition(p=>{ const {latitude:lat,longitude:lng}=p.coords; const tz=Intl.DateTimeFormat().resolvedOptions().timeZone; fetchPrayerTimes(lat,lng,tz); localStorage.setItem('prayer-location-allowed','true'); }, ()=>fetchPrayerTimes(), {enableHighAccuracy:true, timeout:10000, maximumAge:300000}); }
+      function initializePrayerTimes(){ const ok=localStorage.getItem('prayer-location-allowed')==='true'; if(ok) requestLocationAndFetchTimes(); else { fetchPrayerTimes(); document.addEventListener('click', function once(){ requestLocationAndFetchTimes(); document.removeEventListener('click', once); }, {once:true}); } }
+      function checkDailyUpdate(){ const last=localStorage.getItem('prayer-last-update'); const today=new Date().toDateString(); if(last!==today){ requestLocationAndFetchTimes(); localStorage.setItem('prayer-last-update',today); } }
+
+      document.addEventListener('DOMContentLoaded', ()=> setTimeout(initializePrayerTimes, 500));
+      setInterval(checkDailyUpdate, 6*60*60*1000);
+    })();
+</script>

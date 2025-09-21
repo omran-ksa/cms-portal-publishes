@@ -1,0 +1,107 @@
+{
+  "$schema": "appsettings-schema.json",
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Information",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Async",
+        "Args": {
+          "configure": [
+            {
+              "Name": "Console"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "Umbraco": {
+    "CMS": {
+      "Runtime": {
+        "Mode": "Development"
+      },
+      "ModelsBuilder": {
+        "ModelsMode": "SourceCodeManual",
+        "ModelsNamespace": "Umbraco.Models",
+        "FlagOutOfDateModels": true,
+        "ModelsDirectory": "~/umbraco/models",
+        "AcceptUnsafeModelsDirectory": false,
+        "DebugLevel": 1
+      },
+      "WebRouting": {
+        "UmbracoApplicationUrl": "https://localhost:44302"
+      },
+      "Content": {
+        "MacroErrors": "Throw",
+        "ShowDomainWarnings": false,
+        "LoginBackgroundImage": "../umbraco/images/logos/login-logo.png",
+        "LoginLogoImage": "../umbraco/images/logos/logo.png",
+        "LoginLogoImageAlternative": "../umbraco/images/logos/logo-with-company-name.png",
+        "AllowEditInvariantFromNonDefault": true,
+        "ContentVersionCleanupPolicy": {
+          "EnableCleanup": true
+        }
+      },
+      "Hosting": {
+        "Debug": true
+      }
+    }
+  },
+  "uSync": {
+    "Settings": {
+      "ImportOnFirstBoot": true,
+      "ImportAtStartup": null
+    }
+  },
+  "AzureAd": {
+    "TenantId": "158524ac-6c35-4e90-8485-a90b5b83ac94",
+    "ClientId": "4b9b4f92-6e84-4a5e-9884-37005e8033f3",
+    "ClientSecret": "bCi8Q~D9ZDQVCPCqeGI7dBXN4-KcZeXv-llV8brb",
+    "CallbackPath": "/signin-oidc",
+    "SignedOutCallbackPath": "/signout-callback-oidc"
+  },
+
+  "ConnectionStrings": {
+    "umbracoDbDSN": "Server=W-OALKSOUR-LT;Database=Wisys_CMS;User Id=omran;Password=Admin@#$3213;TrustServerCertificate=true;",
+    "umbracoDbDSN___old": "Server=OALKSOUR-OFFSIT;Database=Wisys_CMS;User Id=Wisys_CMS_user;Password=Admin@1234;TrustServerCertificate=true;",
+    "umbracoDbDSN_ProviderName": "Microsoft.Data.SqlClient"
+  },
+  "AssetVersion": "2.1",
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Umbraco": "Debug",
+      "Microsoft": "Warning"
+    }
+  },
+  "AccuWeather": {
+    "ApiKey": "zpka_c0879375e9194032ad451726a21dea88_f9e6aba8"
+  }
+}
+
+/* in web.config to disable caching for specific files
+      <location path="favicon2.ico">
+    <system.webServer>
+      <staticContent>
+        <clientCache cacheControlMode="DisableCache" />
+      </staticContent>
+    </system.webServer>
+  </location>
+
+
+  <location path="assets/icos">
+  <system.webServer>
+    <staticContent>
+      <clientCache cacheControlMode="DisableCache" />
+    </staticContent>
+  </system.webServer>
+</location>
+
+*/

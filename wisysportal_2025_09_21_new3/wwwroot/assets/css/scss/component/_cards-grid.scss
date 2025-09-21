@@ -1,0 +1,28 @@
+.news-grid-section {
+    background-blend-mode: lighten;
+}
+
+.news-card {
+    border-radius: 1rem;
+
+    .card-body {
+        padding: 1.25rem 1.25rem 1.5rem;
+    }
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+[dir="rtl"] .news-card .card-body small {
+    text-align: left;
+}

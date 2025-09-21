@@ -1,0 +1,19 @@
+﻿@using System.Globalization
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Models            
+@using Umbraco.Cms.Web.Common.PublishedModels
+@using Umbraco.Extensions;
+@using Wisys.CMS.UI.Breadcrumbs
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<NewsPageModel>
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback;
+
+@{
+    Layout = "layout.cshtml";
+}
+
+
+
+@if (Model is not null && Model.Value<BlockListModel>("cards") is not null)
+{
+    @await Html.PartialAsync("Sections/CardsGridPageSection", Model);
+}

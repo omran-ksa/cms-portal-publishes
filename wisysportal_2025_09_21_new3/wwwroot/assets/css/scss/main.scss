@@ -1,0 +1,20 @@
+@charset "UTF-8";
+
+// 1. Configuration and helpers
+@import "abstracts/variables", "abstracts/functions", "abstracts/mixins";
+
+// 2. Base stuff
+@import "base/base", "base/fonts", "base/typography", "base/helpers", "base/scroll", "base/print";
+
+// 3. Layout-related sections
+@import "layout/header", "layout/main", "layout/footer";
+
+// 4. pages
+@import "pages/home", "pages/about-company","pages/content", "pages/request-demo","pages/knowledge-center","pages/login","pages/profile";
+
+// 5. component
+@import "component/buttons", "component/horizontal-line", "component/vertical-line", "component/form", "component/section", "component/ads", "component/card";
+@import "component/split-section", "component/fly", "component/container", "component/alert", "component/faq", "component/minimize", "component/packages";
+@import "component/badge", "component/videoJs", "component/transition","component/cards-grid","component/CardsSlider.scss","component/CardsSliderSection.scss","component/articles.scss","component/policies.scss","component/sticky-prayer","component/breadcrumbs";
+;
+

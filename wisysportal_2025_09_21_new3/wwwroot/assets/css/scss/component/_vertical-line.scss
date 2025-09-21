@@ -1,0 +1,20 @@
+// usgae <div class="vertical-line"></div>
+.vertical-line {
+    min-height: 100%; // Full width of the container
+    border-left: toRem(1px) solid $color-Primary-900;
+    margin: 0 toRem(15px); // Space left and right of the line
+
+    &.hide-mobile {
+        @include resDown(md) {
+            border-left-width: 0;
+        }
+    }
+
+    &.hide-mobile-with-margin {
+        @include resDown(md) {
+            min-height: 100%; // Full width of the container
+            border-left: unset;
+            margin: 0 toRem(7px); // Space left and right of the line
+        }
+    }
+}

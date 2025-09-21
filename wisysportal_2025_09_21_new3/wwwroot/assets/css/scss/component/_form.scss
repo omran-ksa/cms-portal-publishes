@@ -1,0 +1,193 @@
+form {
+    display: flex;
+    flex-direction: column;
+    gap: toRem(24px);
+
+    @include resDown(xl) {
+        gap: toRem(12px);
+    }
+
+    @include resDown(md) {
+        gap: toRem(6px);
+    }
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        @include flexItem(1, 1, 1, 2, 2, 2)
+    }
+
+    .group-input {
+        display: flex;
+        flex-direction: column;
+        gap: toRem(8px);
+        text-align: start;
+        
+        .input-phone-code-country {
+            display: flex;
+            flex-direction: row;
+            direction: ltr;
+            gap: toRem(16px);
+
+            .input-phone-code {
+                position: relative;
+                width: 100%;
+
+                .phone-code {
+                    position: absolute;
+                    left: 0;
+                    width: toRem(70px);
+                    border-right: toRem(1px) solid transparent;
+                    border-radius: toRem(7px) toRem(0px) toRem(0px) toRem(7px);
+                    z-index: 1;
+                }
+
+                .phone {
+                    width: 100%;
+                    text-align: end;
+                }
+            }
+        }
+    }
+
+    label {
+        text-align: start;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        color: $color-Primary-900;
+        background-color: $default-background;
+        border-radius: toRem(7px);
+        border: toRem(1px) solid $color-Primary-100;
+        padding: toRem(16px);
+        gap: toRem(16px);
+        @include text-style($body-medium, $line-height-medium, var(--font-family));
+
+        @include resDown(xl) {
+            margin-bottom: toRem(8px);
+        }
+
+        &[readonly] {
+            user-select: none;
+        }
+
+        &[resize="false"] {
+            resize: none;
+        }
+    }
+}
+
+
+form {
+    .select2 {
+        width: fit-content !important;
+        min-width: toRem(150px);
+        @include AutoDirection(true);        
+        
+        @include resDown(xl){
+            margin-bottom: toRem(8px);
+        }
+        
+
+        .select2-selection {
+            display: block;
+            height: 100%;
+            background-color: $default-background;
+            border-radius: toRem(7px);
+            border: toRem(1px) solid $color-Primary-100;
+            padding: toRem(11px) toRem(16px);
+            gap: toRem(16px);
+            @include text-style($body-medium, $line-height-medium, var(--font-family));
+            align-content: center;
+
+            &[readonly] {
+                user-select: none;
+            }
+
+            &[resize="false"] {
+                resize: none;
+            }
+
+            .select2-selection__rendered {
+                text-align: start;
+                color: $color-Primary-900;
+                @include text-style($body-medium, $line-height-medium, var(--font-family));
+
+                @include langStyles(ar) {
+                    padding-right: 8px;
+                    padding-left: 20px;
+                }
+
+                @include langStyles(en) {
+                    padding-right: 20px;
+                    padding-left: 8px;
+                }
+            }
+        }
+
+        .select2-selection__arrow {
+            top: 0 !important;
+            bottom: 0 !important;
+            height: unset !important;
+
+            @include langStyles(ar) {
+                left: toRem(10px) !important;
+                right: auto !important;
+            }
+
+            @include langStyles(en) {
+                left: auto !important;
+                right: toRem(10px) !important;
+            }
+
+            b {
+                top: 47% !important;
+                border-width: toRem(8px) toRem(7px) 0 toRem(7px) !important;
+            }
+        }
+    }
+
+    .select2-container--default.select2-container--open {
+        .select2-selection__arrow {
+            b {
+                border-width: 0 toRem(7px) toRem(8px) toRem(7px) !important;
+            }
+        }
+    }
+}
+
+.select2-container {
+    .select2-dropdown {
+        background-color: $default-background;
+        border-radius: toRem(0px) toRem(0px) toRem(7px) toRem(7px);
+        border: toRem(1px) solid $color-Primary-100;
+        @include text-style($body-medium, $line-height-medium, var(--font-family));
+
+        .select2-results {
+            border-radius: toRem(0px) toRem(0px) toRem(7px) toRem(7px);
+
+            * {
+                color: $color-Primary-900 !important;
+            }
+
+            :last-child {
+                border-radius: toRem(0px) toRem(0px) toRem(7px) toRem(7px);
+            }
+
+            .select2-results__option--selected {
+                background-color: $color-Primary-100;
+
+                .select2-results__option--highlighted {
+                    background-color: $color-Primary-300;
+                }
+            }
+
+            .select2-results__option--highlighted {
+                background-color: $color-Primary-200;
+            }
+        }
+    }
+}

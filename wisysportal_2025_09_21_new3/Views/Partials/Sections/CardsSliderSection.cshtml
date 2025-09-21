@@ -1,0 +1,215 @@
+﻿@using System.Globalization
+@using Umbraco.Cms.Core.Models
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Cms.Core.Strings
+@using Umbraco.Extensions
+@using Umbraco.Models
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<IPublishedElement>
+
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback;
+@inject IShortStringHelper ShortStringHelper
+
+@{
+    var currentLang = (ViewData["CurrentLang"] as string)
+                  ?? (TempData.Peek("CurrentLang") as string)
+                  ?? "ar";
+    var ui = (currentLang?.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ?? false)
+             ? new CultureInfo("ar")
+             : new CultureInfo("en");
+
+    // Read section props (works for element or page with same aliases)
+    var isVisible = Model.Value<bool?>("isVisible") ?? true;
+    if (!isVisible) { return; }
+
+    var sectionName = Model.Value<string>("sectionName");
+    var mainTitle = Model.Value<string>("mainTitle");
+    var description = Model.Value<string>("description");
+    var extraCss = Model.Value<string>("extraCssClasses");
+    var bgColor = Model.Value<string>("backgroundColor");
+    var bgImage = Model.Value<MediaWithCrops>("backgroundImage");
+    var blocks = Model.Value<BlockListModel>("cards") ?? BlockListModel.Empty;
+
+    // (Optional) view-all link if you add a MultiUrlPicker named "viewAllLink"
+    var viewAll = Model.Value<IEnumerable<Link>>("viewAllLink")?.FirstOrDefault();
+
+    var anchor = string.IsNullOrWhiteSpace(sectionName)
+        ? null
+        : sectionName.ToUrlSegment(ShortStringHelper, ui.Name);
+
+    var classes = $"py-5 position-relative overflow-hidden {(string.IsNullOrWhiteSpace(extraCss) ? "" : extraCss)}";
+
+    // Background style with gradient
+    var bgStyle = "background: linear-gradient(135deg, #6b46c1 0%, #9333ea 50%, #c026d3 100%);";
+    if (!string.IsNullOrWhiteSpace(bgColor) && (bgColor.StartsWith("#") || bgColor.StartsWith("rgb")))
+        bgStyle = $"background: {bgColor};";
+    if (bgImage != null)
+        bgStyle = $"background: linear-gradient(135deg, rgba(107, 70, 193, 0.8) 0%, rgba(147, 51, 234, 0.8) 50%, rgba(192, 38, 211, 0.8) 100%), url('{bgImage.GetCropUrl()}'); background-size: cover; background-position: center;";
+
+    // Wrap BlockList items -> CardModel (no .As<>)
+    var cards = blocks.Select(b => new CardModel(b.Content, PublishedValueFallback))
+                      .OrderByDescending(c => c.Date); // newest first
+
+    // Unique DOM ids per section
+    var sid = $"slider-{Guid.NewGuid().ToString("N")}";
+    var prevId = $"{sid}-prev";
+    var nextId = $"{sid}-next";
+
+    // Helper function to generate news detail URL
+    string GetarticleDetailUrl(CardModel item)
+    {
+        var slug = item.Title?.ToUrlSegment(ShortStringHelper, ui.Name) ?? "article-item";
+        var id = item.Key.ToString();
+        return $"/{ui.Name}/articles/details/{slug}/{id}";
+    }
+}
+
+
+
+<section id="@anchor" class="@classes purple-gradient" style="@bgStyle; min-height: 600px;" dir="@(ui.TextInfo.IsRightToLeft ? "rtl" : "ltr")">
+    <div class="container position-relative" style="z-index: 2;">
+
+        @* Section Header *@
+        <div class="text-center mb-5">
+            @if (viewAll != null)
+            {
+                <div class="mb-3">
+                    <a class="text-white text-decoration-none d-inline-flex align-items-center gap-2 opacity-75 hover-opacity-100 transition-all" href="@viewAll.Url" target="@viewAll.Target">
+                        <i class="bi @(ui.TextInfo.IsRightToLeft ? "bi-chevron-right" : "bi-chevron-left") fs-5"></i>
+                        <span class="fw-medium">@(string.IsNullOrWhiteSpace(viewAll.Name) ? (ui.TwoLetterISOLanguageName == "ar" ? "عرض الجميع" : "View all") : viewAll.Name)</span>
+                    </a>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(mainTitle))
+            {
+                <h1 class="display-4 fw-bold text-white mb-3">@mainTitle</h1>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(description))
+            {
+                <p class="lead text-white opacity-75 mb-0">@description</p>
+            }
+        </div>
+
+        @* Swiper Slider Container *@
+        <div class="position-relative px-lg-5 px-3">
+            <div class="swiper overflow-visible pb-4" id="@sid" dir="@(ui.TextInfo.IsRightToLeft ? "rtl" : "ltr")">
+                <div class="swiper-wrapper">
+                    @foreach (var card in cards)
+                    {
+                        var img = card.Image;
+                        @* var link = card.Link?.FirstOrDefault(); *@
+                        var url = @GetarticleDetailUrl(card);
+                        <div class="swiper-slide d-flex" style="height: auto;">
+                            <div class="card h-100 shadow-lg border-0 position-relative overflow-hidden" style="border-radius: 20px; transition: all 0.3s ease;">
+                                @if (img != null)
+                                {
+                                    <div class="position-relative overflow-hidden" style="aspect-ratio: 16/9;">
+                                        <img src="@img.Url()" alt="@img.Name" class="card-img-top w-100 h-100 object-fit-cover" loading="lazy" style="border-radius: 8px 8px 0 0; transition: transform 0.3s ease;" />
+                                    </div>
+                                }
+                                <div class="card-body p-4 d-flex flex-column">
+                                    @if (card.Date != default)
+                                    {
+                                        <div class="text-muted small fw-medium mb-3 @(ui.TextInfo.IsRightToLeft ? "text-start" : "text-end")">
+                                            @card.Date.ToString("dd MMMM yyyy", ui)
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(card.Title))
+                                    {
+                                        <h3 class="h5 fw-bold mb-3 @(ui.TextInfo.IsRightToLeft ? "text-start" : "text-end")" style="color: #1f2937;">@card.Title</h3>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(card.Description))
+                                    {
+                                        <p class="text-muted flex-grow-1 line-clamp-3 @(ui.TextInfo.IsRightToLeft ? "text-start" : "text-end")" style="line-height: 1.6;">@card.Description</p>
+                                    }
+
+                                    <a class="stretched-link" href="" aria-label="@(card.Title)"></a>
+
+                                    @*  @if (link != null)
+                                    {<a class="stretched-link" href="@link.Url" target="@link.Target" aria-label="@(!string.IsNullOrWhiteSpace(link.Name) ? link.Name : n.Title)"></a> 
+                                    }*@
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @* Pagination (mobile only) *@
+                <div class="swiper-pagination d-lg-none mt-4"></div>
+            </div>
+
+            @* Navigation Buttons (desktop only) *@
+            <button id="@prevId" class="swiper-nav-btn btn btn-light rounded-circle shadow position-absolute top-50 d-none d-lg-flex align-items-center justify-content-center"
+                    style="left: -25px; width: 50px; height: 50px; z-index: 10; transform: translateY(-50%); transition: all 0.3s ease;"
+                    aria-label="Previous slide">
+                <i class="bi @(ui.TextInfo.IsRightToLeft ? "bi-chevron-right" : "bi-chevron-right") fs-5 text-secondary"></i>
+            </button>
+            <button id="@nextId" class="swiper-nav-btn btn btn-light rounded-circle shadow position-absolute top-50 d-none d-lg-flex align-items-center justify-content-center"
+                    style="right: -25px; width: 50px; height: 50px; z-index: 10; transform: translateY(-50%); transition: all 0.3s ease;"
+                    aria-label="Next slide">
+                <i class="bi @(ui.TextInfo.IsRightToLeft ? "bi-chevron-left" : "bi-chevron-left") fs-5 text-secondary"></i>
+            </button>
+        </div>
+
+    </div>
+
+    @* Background pattern overlay *@
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background-image: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%); pointer-events: none; z-index: 1;"></div>
+
+    @* Swiper Initialization Script *@
+    <script>
+        (function () {
+            function initSwiper() {
+                const el = document.getElementById('@sid');
+                if (!el || el._inited) return;
+                el._inited = true;
+
+                const swiper = new Swiper(el, {
+                    slidesPerView: 1.1,
+                    spaceBetween: 20,
+                    speed: 600,
+                    grabCursor: true,
+                    loop: false,
+                    observer: true,
+                    observeParents: true,
+                    watchOverflow: true,
+                    navigation: {
+                        nextEl: '#@nextId',
+                        prevEl: '#@prevId'
+                    },
+                    pagination: {
+                        el: '.swiper-pagination',
+                        clickable: true,
+                        dynamicBullets: true
+                    },
+                    breakpoints: {
+                        576: { slidesPerView: 1.2, spaceBetween: 24 },
+                        768: { slidesPerView: 2, spaceBetween: 24 },
+                        992: { slidesPerView: 2.2, spaceBetween: 30 },
+                        1200: { slidesPerView: 3, spaceBetween: 30 },
+                        1400: { slidesPerView: 3.2, spaceBetween: 30 }
+                    }
+                });
+            }
+
+            // Initialize Swiper
+            if (typeof Swiper !== 'undefined') {
+                setTimeout(initSwiper, 100);
+            } else {
+                let attempts = 0;
+                const checkSwiper = setInterval(function() {
+                    attempts++;
+                    if (typeof Swiper !== 'undefined') {
+                        clearInterval(checkSwiper);
+                        setTimeout(initSwiper, 100);
+                    } else if (attempts >= 50) {
+                        clearInterval(checkSwiper);
+                        console.error('Swiper library failed to load');
+                    }
+                }, 100);
+            }
+        })();
+    </script>
+</section>
+

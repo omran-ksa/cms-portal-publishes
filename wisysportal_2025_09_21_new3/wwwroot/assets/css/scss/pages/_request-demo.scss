@@ -1,0 +1,40 @@
+page#request-demo {
+    group {
+        .landing {
+            display: flex;
+            flex-direction: column;
+            gap: toRem(48px);
+
+            @include resDown(md) {
+                gap: toRem(24px);
+                padding-bottom: toRem(24px);
+            }
+
+            .header {
+                display: flex;
+                flex-direction: column;
+                gap: toRem(32px);
+
+                @include resDown(md) {
+                    gap: toRem(16px);
+                }
+
+            }
+
+            .contact-us {
+                display: flex;
+                flex-direction: column;
+                gap: toRem(16px);
+
+                @include resDown(md) {
+                    gap: toRem(8px);
+                    align-items: center;
+                }
+
+                .c-btn {
+                    width: fit-content !important;
+                }
+            }
+        }
+    }
+}

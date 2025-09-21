@@ -1,0 +1,143 @@
+.minimize-40{
+    width: 40% !important;
+
+    @include resDown(xl) {
+        width: 70% !important;
+    }
+
+    @include resDown(md) {
+        width: 100% !important;
+    }
+}
+
+.minimize-50{
+    width: 50% !important;
+
+    @include resDown(xl) {
+        width: 75% !important;
+    }
+
+    @include resDown(md) {
+        width: 100% !important;
+    }
+}
+
+.minimize-60{
+    width: 60% !important;
+
+    @include resDown(xl) {
+        width: 80% !important;
+    }
+
+    @include resDown(md) {
+        width: 100% !important;
+    }
+}
+
+.minimize-70{
+    width: 70% !important;
+
+    @include resDown(xl) {
+        width: 85% !important;
+    }
+
+    @include resDown(md) {
+        width: 100% !important;
+    }
+}
+
+.minimize-80{
+    width: 80% !important;
+
+    @include resDown(xl) {
+        width: 90% !important;
+    }
+
+    @include resDown(md) {
+        width: 100% !important;
+    }
+}
+
+.minimize-90{
+    width: 90% !important;
+
+    @include resDown(xl) {
+        width: 95% !important;
+    }
+
+    @include resDown(md) {
+        width: 100% !important;
+    }
+}
+
+.minimize-40-xl{
+    @include resDown(xl) {
+        width: 40% !important;
+    }
+}
+
+.minimize-50-xl{
+    @include resDown(xl) {
+        width: 50% !important;
+    }
+}
+
+.minimize-60-xl{
+    @include resDown(xl) {
+        width: 60% !important;
+    }
+}
+
+.minimize-70-xl{
+    @include resDown(xl) {
+        width: 70% !important;
+    }
+}
+
+.minimize-80-xl{
+    @include resDown(xl) {
+        width: 80% !important;
+    }
+}
+
+.minimize-90-xl{
+    @include resDown(xl) {
+        width: 90% !important;
+    }
+}
+
+.minimize-40-md{
+    @include resDown(md) {
+        width: 40% !important;
+    }
+}
+
+.minimize-50-md{
+    @include resDown(md) {
+        width: 50% !important;
+    }
+}
+
+.minimize-60-md{
+    @include resDown(md) {
+        width: 60% !important;
+    }
+}
+
+.minimize-70-md{
+    @include resDown(md) {
+        width: 70% !important;
+    }
+}
+
+.minimize-80-md{
+    @include resDown(md) {
+        width: 80% !important;
+    }
+}
+
+.minimize-90-md{
+    @include resDown(md) {
+        width: 70% !important;
+    }
+}

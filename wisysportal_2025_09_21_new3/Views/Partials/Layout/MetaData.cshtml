@@ -1,0 +1,15 @@
+﻿@using Wisys.CMS.Helpers
+@{
+   var cacheAssetVersion = DateTime.Now.ToString("yyyyMMddHHmm");    
+}
+
+<!-- Default favicon -->
+<link rel="icon" href="/favicon2.ico?v=@cacheAssetVersion" type="image/x-icon" />
+<!-- PNG sizes for modern browsers -->
+<link rel="icon" type="image/png" sizes="16x16" href="~/assets/icos/fav-icon-16.png?v=@cacheAssetVersion" />
+<link rel="icon" type="image/png" sizes="32x32" href="~/assets/icos/fav-icon-32.png?v=@cacheAssetVersion" />
+
+
+<link rel="shortcut icon" href="/favicon2.ico?v=@cacheAssetVersion" />
+<link rel="apple-touch-icon" sizes="180x180" href="~/assets/icos/fav-icon-32.png?v=@cacheAssetVersion" />
+<meta name="msapplication-TileImage" content="~/assets/icos/fav-icon-16.png?v=@cacheAssetVersion" />

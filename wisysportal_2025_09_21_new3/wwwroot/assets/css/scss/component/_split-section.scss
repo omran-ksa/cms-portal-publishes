@@ -1,0 +1,153 @@
+.split-section {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+
+
+    group {
+        justify-content: center;
+
+        @include flexItem(1, 1, 2, 2, 2, 2) {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            align-self: center;
+            gap: toRem(24px);
+
+            @include resDown(xl) {
+                gap: toRem(12px);
+            }
+
+            @include resDown(md) {
+                gap: toRem(6px);
+            }
+
+            .deep {
+                display: flex;
+                flex-direction: column;
+                gap: toRem(24px);
+
+                @include resDown(xl) {
+                    gap: toRem(12px);
+                }
+
+                @include resDown(md) {
+                    gap: toRem(6px);
+                }
+            }
+
+            &.context {
+                @include resDown(md) {
+                    padding-bottom: toRem(24px);
+                }
+
+                &.context-start {
+                    place-items: start;
+                    text-align: start;
+
+                    @include resDown(md) {
+                        place-items: center;
+                        text-align: center;
+                    }
+                }
+            }
+
+            &.image {
+                img {
+                    width: 100%;
+                    object-fit: cover;
+                    object-position: center;
+                    border-radius: toRem(30px);
+                    border: toRem(10px) solid $color-Primary-50;
+                }
+
+                &.border-disable {
+                    img {
+                        border: none;
+                    }
+                }
+
+                &.image-dark {
+                    img {
+                        border: toRem(10px) solid $color-Primary-100;
+                    }
+                }
+
+                &.ratio-16-9 {
+                    img {
+                        aspect-ratio: 16 / 9;
+                    }
+                }
+            }
+
+            &.video {
+                .video-container {
+                    border-radius: toRem(30px);
+                    border: toRem(10px) solid $color-Primary-50;
+
+                    picture, img, video, .video-js {
+                        border-radius: toRem(20px);
+                        background-color: transparent; // to hide video border color
+                        transform: translateZ(0); // this line of code tells the browser to render on the GPU
+                    }
+
+                    .vjs-control-bar {
+                        border-bottom-left-radius: toRem(20px);
+                        border-bottom-right-radius: toRem(20px);
+                    }
+                }
+
+                &.ratio-16-9 {
+                    .video-container {
+                        aspect-ratio: 16 / 9;
+
+                        .video-js {
+                            .vjs-tech {
+                                aspect-ratio: 16 / 9;
+                            }
+
+                            .vjs-poster {
+                                aspect-ratio: 16 / 9;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        group-card {
+            width: 100%;
+            justify-content: center;
+
+            @include flexItem(1, 2, 2, 3, 3, 3) {
+                width: 100%;
+            }
+        }
+    }
+}
+
+.split-section-unlimitid-2 {
+    group {
+        @include flexItem(1, 1, 2, 2, 2, 2);
+    }
+}
+
+.split-section-unlimitid-3 {
+    group {
+        @include flexItem(1, 1, 2, 2, 3, 3);
+    }
+}
+
+.split-section-unlimitid-6{
+    group {
+        @include flexItem(2, 2, 4, 4, 6, 6);
+    }
+}
+
+.split-section-unlimitid-7{
+
+    group {
+        @include flexItem(2, 2, 4, 4, 6, 7);
+    }
+}

@@ -1,0 +1,630 @@
+﻿@using System.Globalization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Http
+@using Umbraco.Cms.Core.Services
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@inject IMemberService MemberService
+
+@{
+    Layout = "layout.cshtml";
+
+    // Culture helpers (keep your existing culture code)
+    var routeCulture = ViewContext?.RouteData?.Values?["culture"]?.ToString();
+    if (string.IsNullOrWhiteSpace(routeCulture))
+    {
+        var firstSeg = (Context.Request.Path.Value ?? "/")
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        if (firstSeg is "ar" or "en") routeCulture = firstSeg;
+    }
+
+    var currentLang = !string.IsNullOrWhiteSpace(routeCulture)
+        ? (routeCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en")
+        : "ar";
+
+    ViewData["CurrentLang"] = currentLang;
+    var isAr = currentLang == "ar";
+    var dir = isAr ? "rtl" : "ltr";
+
+    string D(string key, string ar, string en)
+    {
+        var v = Umbraco.GetDictionaryValue(key);
+        if (!string.IsNullOrWhiteSpace(v) &&
+            !v.Equals(key, StringComparison.OrdinalIgnoreCase))
+            return v;
+        return isAr ? ar : en;
+    }
+
+    // Get member data from database
+    var email = User.FindFirst(ClaimTypes.Email)?.Value;
+    var member = !string.IsNullOrEmpty(email) ? MemberService.GetByEmail(email) : null;
+
+    // Get session data as fallback
+    Dictionary<string, object> sessionData = null;
+    try
+    {
+        var sessionJson = Context.Session.GetString("CompleteUserData");
+        if (!string.IsNullOrEmpty(sessionJson))
+        {
+            sessionData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(sessionJson);
+        }
+    }
+    catch (Exception)
+    {
+        // Ignore session parsing errors
+        sessionData = null;
+    }
+
+    // Helper function to get value with fallback priority: Database -> Session -> Empty
+    string GetValueWithFallback(string propertyAlias, string sessionKey = null)
+    {
+        // Try database first
+        if (member != null)
+        {
+            var dbValue = member.GetValue(propertyAlias)?.ToString() ?? "";
+            if (HasValue(dbValue)) return dbValue;
+        }
+
+        // Try session as fallback
+        if (sessionData != null)
+        {
+            var sessionKeyToUse = sessionKey ?? propertyAlias;
+
+            // Try the exact key first
+            if (sessionData.ContainsKey(sessionKeyToUse))
+            {
+                var sessionValue = sessionData[sessionKeyToUse]?.ToString() ?? "";
+                if (HasValue(sessionValue)) return sessionValue;
+            }
+
+            // Try with "Extended_" prefix
+            var extendedKey = $"Extended_{sessionKeyToUse}";
+            if (sessionData.ContainsKey(extendedKey))
+            {
+                var extendedValue = sessionData[extendedKey]?.ToString() ?? "";
+                if (HasValue(extendedValue)) return extendedValue;
+            }
+        }
+
+        return "";
+    }
+
+    // Helper function to format date
+    string FormatDate(string dateString)
+    {
+        if (string.IsNullOrEmpty(dateString) || !DateTime.TryParse(dateString, out var date))
+            return "";
+        return date.ToString(isAr ? "dd/MM/yyyy" : "MM/dd/yyyy");
+    }
+
+    // Helper function to check if field has value
+    bool HasValue(string value)
+    {
+        return !string.IsNullOrWhiteSpace(value) &&
+               !value.Equals("null", StringComparison.OrdinalIgnoreCase) &&
+               !value.Equals("0001-01-01T00:00:00", StringComparison.OrdinalIgnoreCase) &&
+               !value.Equals("NULL", StringComparison.OrdinalIgnoreCase);
+    }
+
+    bool HasValidDateValue(string value)
+{
+    // Check for null, empty, or whitespace
+    if (string.IsNullOrWhiteSpace(value))
+        return false;
+    
+    // Check for common null representations
+    if (value.Equals("null", StringComparison.OrdinalIgnoreCase) ||
+        value.Equals("NULL", StringComparison.OrdinalIgnoreCase) ||
+        value.Equals("nil", StringComparison.OrdinalIgnoreCase))
+        return false;
+    
+    // Check for default DateTime values
+    if (value.Equals("0001-01-01T00:00:00", StringComparison.OrdinalIgnoreCase) ||
+        value.Equals("0001-01-01", StringComparison.OrdinalIgnoreCase) ||
+        value.Equals("1900-01-01T00:00:00", StringComparison.OrdinalIgnoreCase) ||
+        value.Equals("1900-01-01", StringComparison.OrdinalIgnoreCase))
+        return false;
+    
+    // Try to parse the date
+    if (!DateTime.TryParse(value, out DateTime parsedDate))
+        return false;
+    
+    // Check if date is before 1970 (Unix epoch start)
+    DateTime epochStart = new DateTime(1970, 1, 1);
+    if (parsedDate < epochStart)
+        return false;
+    
+    // Check if date is too far in the future (e.g., beyond 2100)
+    DateTime futureLimit = new DateTime(2100, 1, 1);
+    if (parsedDate > futureLimit)
+        return false;
+    
+    // Check for other suspicious dates
+    DateTime minReasonableDate = new DateTime(1970, 1, 1);
+    DateTime maxReasonableDate = DateTime.Now.AddYears(10);
+    
+    return parsedDate >= minReasonableDate && parsedDate <= maxReasonableDate;
+}
+
+// Alternative version that returns the parsed date or null
+DateTime? GetValidDateOrNull(string value)
+{
+    if (!HasValidDateValue(value))
+        return null;
+    
+    if (DateTime.TryParse(value, out DateTime parsedDate))
+        return parsedDate;
+    
+    return null;
+}
+
+
+    // Build profile data with fallback logic
+    var profileData = new Dictionary<string, string>();
+
+    // Basic info with fallbacks
+    profileData["name"] = member?.Name ??
+                         GetValueWithFallback("name", "Name") ??
+                         GetValueWithFallback("displayName") ?? "";
+
+    profileData["email"] = member?.Email ??
+                          GetValueWithFallback("email", "Email") ?? "";
+
+    // All other fields with database -> session fallback
+    profileData["profilePhoto"] = GetValueWithFallback("profilePhoto");
+    profileData["jobTitle"] = GetValueWithFallback("jobTitle");
+    profileData["department"] = GetValueWithFallback("department");
+    profileData["companyName"] = GetValueWithFallback("companyName");
+    profileData["officeLocation"] = GetValueWithFallback("officeLocation");
+    profileData["employeeId"] = GetValueWithFallback("employeeId");
+    profileData["manager"] = GetValueWithFallback("manager");
+    profileData["employeeType"] = GetValueWithFallback("employeeType");
+
+    // Handle dates with formatting
+    var hireDateRaw = GetValueWithFallback("hireDate") ?? GetValueWithFallback("employeeHireDate");
+    profileData["hireDate"] = FormatDate(hireDateRaw);
+
+    var birthdayRaw = GetValueWithFallback("birthday");
+    profileData["birthday"] = FormatDate(birthdayRaw);
+
+    profileData["mobilePhone"] = GetValueWithFallback("mobilePhone");
+    profileData["businessPhones"] = GetValueWithFallback("businessPhones");
+    profileData["streetAddress"] = GetValueWithFallback("streetAddress");
+    profileData["city"] = GetValueWithFallback("city");
+    profileData["state"] = GetValueWithFallback("state");
+    profileData["postalCode"] = GetValueWithFallback("postalCode");
+    profileData["country"] = GetValueWithFallback("country");
+    profileData["preferredLanguage"] = GetValueWithFallback("preferredLanguage");
+    profileData["aboutMe"] = GetValueWithFallback("aboutMe");
+    profileData["skills"] = GetValueWithFallback("skills");
+    profileData["interests"] = GetValueWithFallback("interests");
+    profileData["schools"] = GetValueWithFallback("schools");
+    profileData["responsibilities"] = GetValueWithFallback("responsibilities");
+
+    // Group fields by category - ONLY INCLUDE FIELDS WITH VALUES
+    var basicInfo = new Dictionary<string, (string labelAr, string labelEn, string value, string icon)>();
+    if (HasValue(profileData["name"]))
+        basicInfo["name"] = ("الاسم", "Full Name", profileData["name"], "bi-person-fill");
+    if (HasValue(profileData["email"]))
+        basicInfo["email"] = ("البريد الإلكتروني", "Email Address", profileData["email"], "bi-envelope-fill");
+    if (HasValue(profileData["preferredLanguage"]))
+        basicInfo["preferredLanguage"] = ("اللغة المفضلة", "Preferred Language", profileData["preferredLanguage"], "bi-translate");
+    if (HasValidDateValue(profileData["birthday"]))
+        basicInfo["birthday"] = ("تاريخ الميلاد", "Date of Birth", profileData["birthday"], "bi-calendar-event-fill");
+
+    var workInfo = new Dictionary<string, (string labelAr, string labelEn, string value, string icon)>();
+    if (HasValue(profileData["jobTitle"]))
+        workInfo["jobTitle"] = ("المسمى الوظيفي", "Job Title", profileData["jobTitle"], "bi-briefcase-fill");
+    if (HasValue(profileData["department"]))
+        workInfo["department"] = ("القسم", "Department", profileData["department"], "bi-building-fill");
+    if (HasValue(profileData["companyName"]))
+        workInfo["companyName"] = ("اسم الشركة", "Company Name", profileData["companyName"], "bi-buildings-fill");
+    if (HasValue(profileData["officeLocation"]))
+        workInfo["officeLocation"] = ("موقع المكتب", "Office Location", profileData["officeLocation"], "bi-geo-alt-fill");
+    if (HasValue(profileData["employeeId"]))
+        workInfo["employeeId"] = ("رقم الموظف", "Employee ID", profileData["employeeId"], "bi-badge-ad-fill");
+    if (HasValue(profileData["manager"]))
+        workInfo["manager"] = ("المدير المباشر", "Manager", profileData["manager"], "bi-person-badge-fill");
+    if (HasValue(profileData["employeeType"]))
+        workInfo["employeeType"] = ("نوع الموظف", "Employee Type", profileData["employeeType"], "bi-card-checklist");
+    if (HasValidDateValue(profileData["hireDate"]))
+        workInfo["hireDate"] = ("تاريخ التوظيف", "Hire Date", profileData["hireDate"], "bi-calendar-plus-fill");
+
+    var contactInfo = new Dictionary<string, (string labelAr, string labelEn, string value, string icon)>();
+    if (HasValue(profileData["mobilePhone"]))
+        contactInfo["mobilePhone"] = ("الهاتف المحمول", "Mobile Phone", profileData["mobilePhone"], "bi-phone-fill");
+    if (HasValue(profileData["businessPhones"]))
+        contactInfo["businessPhones"] = ("هواتف العمل", "Business Phones", profileData["businessPhones"], "bi-telephone-fill");
+    if (HasValue(profileData["streetAddress"]))
+        contactInfo["streetAddress"] = ("عنوان الشارع", "Street Address", profileData["streetAddress"], "bi-house-door-fill");
+    if (HasValue(profileData["city"]))
+        contactInfo["city"] = ("المدينة", "City", profileData["city"], "bi-geo-fill");
+    if (HasValue(profileData["state"]))
+        contactInfo["state"] = ("الولاية/المحافظة", "State/Province", profileData["state"], "bi-map-fill");
+    if (HasValue(profileData["postalCode"]))
+        contactInfo["postalCode"] = ("الرمز البريدي", "Postal Code", profileData["postalCode"], "bi-mailbox");
+    if (HasValue(profileData["country"]))
+        contactInfo["country"] = ("البلد", "Country", profileData["country"], "bi-globe");
+
+    var additionalInfo = new Dictionary<string, (string labelAr, string labelEn, string value, string icon)>();
+    if (HasValue(profileData["aboutMe"]))
+        additionalInfo["aboutMe"] = ("نبذة عني", "About Me", profileData["aboutMe"], "bi-chat-text-fill");
+    if (HasValue(profileData["skills"]))
+        additionalInfo["skills"] = ("المهارات", "Skills", profileData["skills"], "bi-tools");
+    if (HasValue(profileData["interests"]))
+        additionalInfo["interests"] = ("الاهتمامات", "Interests", profileData["interests"], "bi-star-fill");
+    if (HasValue(profileData["schools"]))
+        additionalInfo["schools"] = ("التعليم", "Education", profileData["schools"], "bi-mortarboard-fill");
+    if (HasValue(profileData["responsibilities"]))
+        additionalInfo["responsibilities"] = ("المسؤوليات", "Responsibilities", profileData["responsibilities"], "bi-list-check");
+
+    var profilePhotoBase64 = profileData["profilePhoto"];
+    var hasProfilePhoto = HasValue(profilePhotoBase64);
+}
+
+<!-- Keep the rest of your existing HTML exactly the same -->
+<!-- The profile data will now automatically use database values first, -->
+<!-- then fall back to session values, and only show fields with actual values -->
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/assets/scss/profile.css">
+}
+
+<div class="profile-container" dir="@dir">
+    <div class="container-fluid px-3">
+        @if (!User?.Identity?.IsAuthenticated == true)
+        {
+            <div class="row justify-content-center mt-5">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <div class="alert alert-warning d-flex align-items-center shadow-sm animate__animated animate__fadeIn">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">@D("Profile.NotAuthenticatedTitle", "غير مصرح", "Not Authenticated")</h5>
+                            <p class="mb-0">@D("Profile.NotAuthenticated", "أنت غير مسجل الدخول. يرجى تسجيل الدخول للوصول إلى ملفك الشخصي.", "You are not signed in. Please sign in to access your profile.")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Profile Header -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="profile-header-card card border-0 shadow-lg mb-4 overflow-hidden animate__animated animate__fadeInUp">
+                        <div class="profile-hero position-relative">
+                            <div class="hero-gradient"></div>
+                            <div class="card-body p-4 p-md-5 position-relative">
+                                <div class="row align-items-center">
+                                    <div class="col-12 col-md-auto text-center text-md-start mb-3 mb-md-0">
+                                        <div class="profile-avatar-wrapper d-inline-block position-relative">
+                                            @if (hasProfilePhoto)
+                                            {
+                                                <img src="data:image/jpeg;base64,@profilePhotoBase64"
+                                                     alt="@D("Profile.ProfilePhoto", "صورة الملف الشخصي", "Profile Photo")"
+                                                     class="profile-avatar rounded-circle border border-4 border-white shadow-lg animate__animated animate__zoomIn">
+                                            }
+                                            else
+                                            {
+                                                <div class="profile-avatar-placeholder rounded-circle border border-4 border-white shadow-lg d-flex align-items-center justify-content-center animate__animated animate__zoomIn">
+                                                    <i class="bi bi-person-circle text-muted" style="font-size: 6rem;"></i>
+                                                </div>
+                                            }
+                                            <div class="online-indicator position-absolute bottom-0 end-0 bg-success rounded-circle border border-3 border-white"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md text-center text-md-@(isAr?"end":"start")">
+                                        <h1 class="display-6 fw-bold text-white mb-2 animate__animated animate__fadeInLeft animate__delay-1s">
+                                            @if (HasValue(profileData.ContainsKey("name") ? profileData["name"].ToString() : ""))
+                                            {
+                                                @profileData["name"]
+                                            }
+                                            else
+                                            {
+                                                @D("Profile.User", "المستخدم", "User")
+                                            }
+                                        </h1>
+                                        @if (HasValue(profileData.ContainsKey("jobTitle") ? profileData["jobTitle"].ToString() : ""))
+                                        {
+                                            <p class="fs-5 text-white-75 mb-2 animate__animated animate__fadeInLeft animate__delay-2s">
+                                                <i class="bi bi-briefcase-fill me-2"></i>
+                                                @profileData["jobTitle"]
+                                            </p>
+                                        }
+                                        @if (HasValue(profileData.ContainsKey("department") ? profileData["department"].ToString() : ""))
+                                        {
+                                            <p class="fs-6 text-white-75 mb-0 animate__animated animate__fadeInLeft animate__delay-3s">
+                                                <i class="bi bi-building-fill me-2"></i>
+                                                @profileData["department"]
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Information -->
+            <div class="row g-4">
+                <!-- Basic Information -->
+                @{
+                    var basicFields = basicInfo.Where(kvp => HasValue(kvp.Value.value)).ToList();
+                }
+                @if (basicFields.Any())
+                {
+                    <div class="col-12 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100 animate__animated animate__fadeInUp animate__delay-1s">
+                            <div class="card-header bg-primary text-white border-0">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <i class="bi bi-person-vcard-fill me-2"></i>
+                                    @D("Profile.BasicInfo", "المعلومات الأساسية", "Basic Information")
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    @foreach (var (key, (labelAr, labelEn, value, icon)) in basicFields)
+                                    {
+                                        <div class="list-group-item border-0 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="icon-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center">
+                                                        <i class="bi @icon text-light"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <label class="form-label small text-muted mb-1 fw-semibold">@(isAr? labelAr : labelEn)</label>
+                                                    <div class="fw-medium text-dark">@value</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Work Information -->
+                @{
+                    var workFields = workInfo.Where(kvp => HasValue(kvp.Value.value)).ToList();
+                }
+                @if (workFields.Any())
+                {
+                    <div class="col-12 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100 animate__animated animate__fadeInUp animate__delay-2s">
+                            <div class="card-header bg-success text-white border-0">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <i class="bi bi-briefcase-fill me-2"></i>
+                                    @D("Profile.WorkInfo", "معلومات العمل", "Work Information")
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    @foreach (var (key, (labelAr, labelEn, value, icon)) in workFields)
+                                    {
+                                        <div class="list-group-item border-0 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="icon-circle bg-primary bg-opacity-10 text-light d-flex align-items-center justify-content-center">
+                                                        <i class="bi @icon"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <label class="form-label small text-muted mb-1 fw-semibold">@(isAr? labelAr : labelEn)</label>
+                                                    <div class="fw-medium text-dark">@value</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Contact Information -->
+                @{
+                    var contactFields = contactInfo.Where(kvp => HasValue(kvp.Value.value)).ToList();
+                }
+                @if (contactFields.Any())
+                {
+                    <div class="col-12 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100 animate__animated animate__fadeInUp animate__delay-3s">
+                            <div class="card-header bg-info text-light border-0">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <i class="bi bi-telephone-fill me-2 text-light"></i>
+                                    @D("Profile.ContactInfo", "معلومات الاتصال", "Contact Information")
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    @foreach (var (key, (labelAr, labelEn, value, icon)) in contactFields)
+                                    {
+                                        <div class="list-group-item border-0 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="icon-circle bg-primary bg-opacity-10 text-info d-flex align-items-center justify-content-center">
+                                                        <i class="bi @icon text-light"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <label class="form-label small text-muted mb-1 fw-semibold">@(isAr? labelAr : labelEn)</label>
+                                                    <div class="fw-medium text-dark">@value</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Additional Information -->
+                @{
+                    var additionalFields = additionalInfo.Where(kvp => HasValue(kvp.Value.value)).ToList();
+                }
+                @if (additionalFields.Any())
+                {
+                    <div class="col-12 col-lg-6">
+                        <div class="card border-0 shadow-sm h-100 animate__animated animate__fadeInUp animate__delay-4s">
+                            <div class="card-header bg-primary text-dark border-0">
+                                <h5 class="card-title mb-0 d-flex align-items-center">
+                                    <i class="bi bi-plus-circle-fill me-2"></i>
+                                    @D("Profile.AdditionalInfo", "معلومات إضافية", "Additional Information")
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                @foreach (var (key, (labelAr, labelEn, value, icon)) in additionalFields)
+                                {
+                                    <div class="mb-4">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="icon-circle bg-primary bg-opacity-10 text-light d-flex align-items-center justify-content-center me-2">
+                                                <i class="bi @icon"></i>
+                                            </div>
+                                            <label class="form-label small text-muted mb-0 fw-semibold">@(isAr? labelAr : labelEn)</label>
+                                        </div>
+                                        <div class="@(isAr ? "text-end" : "text-start") fw-medium text-light" style="@(isAr ? "margin-right: 3rem;" : "margin-left: 3rem;")">
+                                            @value
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Logout Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm bg-light animate__animated animate__fadeInUp animate__delay-5s">
+                        <div class="card-body text-center py-4">
+                            <h6 class="text-muted mb-3">@D("Profile.AccountActions", "إجراءات الحساب", "Account Actions")</h6>
+                            <a href="@Url.Action("Logout", "Account", new { returnUrl = "/" })"
+                               class="btn btn-outline-danger btn-lg px-4 js-confirm"
+                               data-rtl="@(isAr.ToString().ToLower())"
+                               data-title-ar="@D("Dialog.ConfirmTitle", "تأكيد", "Confirm")"
+                               data-title-en="@D("Dialog.ConfirmTitle", "Confirm", "Confirm")"
+                               data-text-ar="@D("Profile.LogoutConfirm", "هل تريد تسجيل الخروج؟", "Are you sure you want to logout?")"
+                               data-text-en="@D("Profile.LogoutConfirm", "هل تريد تسجيل الخروج؟", "Are you sure you want to logout?")"
+                               data-confirm-ar="@D("Dialog.YesLogout", "نعم، خروج", "Yes, logout")"
+                               data-confirm-en="@D("Dialog.YesLogout", "Yes, logout", "Yes, logout")"
+                               data-cancel-ar="@D("Dialog.Cancel", "إلغاء", "Cancel")"
+                               data-cancel-en="@D("Dialog.Cancel", "Cancel", "Cancel")">
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                <span>@D("Profile.Logout", "تسجيل الخروج", "Logout")</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <script>
+        // Initialize animations and interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add entrance animations with stagger
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.2}s`;
+            });
+
+            // Intersection Observer for scroll animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            // Observe all profile cards
+            document.querySelectorAll('.card').forEach(card => {
+                observer.observe(card);
+            });
+
+            // Add hover effects to list items
+            document.querySelectorAll('.list-group-item').forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(5px)';
+                    this.style.transition = 'transform 0.2s ease';
+                });
+
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+        });
+
+        // Enhanced logout confirmation with better UX
+        function pick(el, ar, en) {
+            var rtl = el.getAttribute('data-rtl') === 'true';
+            return rtl ? el.getAttribute(ar) : el.getAttribute(en);
+        }
+
+        document.addEventListener('click', function (e) {
+            var el = e.target.closest('.js-confirm');
+            if (!el) return;
+
+            e.preventDefault();
+            var rtl = el.getAttribute('data-rtl') === 'true';
+
+            Swal.fire({
+                title: pick(el, 'data-title-ar', 'data-title-en'),
+                html: pick(el, 'data-text-ar', 'data-text-en'),
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: pick(el, 'data-confirm-ar', 'data-confirm-en'),
+                cancelButtonText: pick(el, 'data-cancel-ar', 'data-cancel-en'),
+                reverseButtons: rtl,
+                customClass: {
+                    popup: 'profile-swal shadow-lg',
+                    confirmButton: 'btn btn-danger me-2',
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false,
+                showClass: {
+                    popup: 'animate__animated animate__zoomIn animate__faster'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__zoomOut animate__faster'
+                },
+                didOpen: popup => {
+                    if (rtl) popup.setAttribute('dir', 'rtl');
+                    popup.style.fontFamily = 'inherit';
+                }
+            }).then(res => {
+                if (res.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: rtl ? 'جاري تسجيل الخروج...' : 'Logging out...',
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                       showConfirmButton: false,
+                        allowOutsideClick: false
+                    });
+
+                    // Redirect after short delay for better UX
+                    setTimeout(() => {
+                        window.location.href = el.getAttribute('href');
+                    }, 1000);
+                }
+            });
+        });
+    </script>
+    }

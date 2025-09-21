@@ -1,0 +1,247 @@
+.c-container{
+    width: 100%;
+    gap: toRem(60px);
+    padding: toRem(180px) toRem(150px);
+
+    @include resDown(xl) {
+      gap: toRem(30px);
+      padding: toRem(90px) toRem(75px);
+    }
+
+    @include resDown(md) {
+      gap: toRem(15px);
+      padding: toRem(45px) toRem(37.5px);
+    }
+}
+
+.c-container-xs{
+  width: 100%;
+  gap: toRem(48px);
+  padding: toRem(50px) toRem(100px);
+
+  @include resDown(xl) {
+    gap: toRem(24px);
+    padding: toRem(25px) toRem(50px);
+  }
+
+  @include resDown(md) {
+    gap: toRem(12px);
+    padding: toRem(12.5px) toRem(25px);
+  }
+}
+
+.c-container-sm {
+    width: 100%;
+    gap: toRem(30px);
+    padding: toRem(100px);
+
+    @include resDown(xl) {
+        gap: toRem(15px);
+        padding: toRem(50px);
+    }
+
+    @include resDown(md) {
+        gap: toRem(10px);
+        padding: toRem(25px);
+    }
+
+    &.c-container-top {
+        padding-top: toRem(30px);
+
+        @include resDown(xl) {
+            padding-top: toRem(15px);
+        }
+
+        @include resDown(md) {
+            padding-top: toRem(10px);
+        }
+    }
+
+    &.c-container-bottom {
+        padding-bottom: toRem(30px);
+
+        @include resDown(xl) {
+            padding-bottom: toRem(15px);
+        }
+
+        @include resDown(md) {
+            padding-bottom: toRem(10px);
+        }
+    }
+}
+
+.c-container-md {
+    width: 100%;
+    gap: toRem(30px);
+    padding: toRem(100px) toRem(120px);
+
+    @include resDown(xl) {
+        gap: toRem(15px);
+        padding: toRem(50px) toRem(60px);
+    }
+
+    @include resDown(md) {
+        gap: toRem(10px);
+        padding: toRem(25px) toRem(30px);
+    }
+
+    &.c-container-top {
+        padding-top: toRem(30px);
+
+        @include resDown(xl) {
+            padding-top: toRem(15px);
+        }
+
+        @include resDown(md) {
+            padding-top: toRem(10px);
+        }
+    }
+
+    &.c-container-bottom {
+        padding-bottom: toRem(30px);
+
+        @include resDown(xl) {
+            padding-bottom: toRem(15px);
+        }
+
+        @include resDown(md) {
+            padding-bottom: toRem(10px);
+        }
+    }
+}
+
+.c-container-lg {
+    width: 100%;
+    gap: toRem(60px);
+    padding: toRem(100px) toRem(150px);
+
+    @include resDown(xl) {
+        gap: toRem(30px);
+        padding: toRem(50px) toRem(75px);
+    }
+
+    @include resDown(md) {
+        gap: toRem(15px);
+        padding: toRem(25px) toRem(37.5px);
+    }
+
+    &.c-container-top {
+        padding-top: toRem(50px);
+
+        @include resDown(xl) {
+            padding-top: toRem(25px);
+        }
+
+        @include resDown(md) {
+            padding-top: toRem(12.5px);
+        }
+    }
+
+    &.c-container-bottom {
+        padding-bottom: toRem(50px);
+
+        @include resDown(xl) {
+            padding-bottom: toRem(25px);
+        }
+
+        @include resDown(md) {
+            padding-bottom: toRem(12.5px);
+        }
+    }
+}
+
+.c-container-xl {
+    width: 100%;
+    gap: toRem(24px);
+    padding: toRem(100px) toRem(250px);
+
+    @include resDown(xl) {
+        gap: toRem(12px);
+        padding: toRem(50px) toRem(125px);
+    }
+
+    @include resDown(md) {
+        gap: toRem(6px);
+        padding: toRem(25px) toRem(37.5px);
+    }
+
+    &.c-container-top {
+        padding-top: toRem(50px);
+
+        @include resDown(xl) {
+            padding-top: toRem(25px);
+        }
+
+        @include resDown(md) {
+            padding-top: toRem(12.5px);
+        }
+    }
+
+    &.c-container-bottom {
+        padding-bottom: toRem(50px);
+
+        @include resDown(xl) {
+            padding-bottom: toRem(25px);
+        }
+
+        @include resDown(md) {
+            padding-bottom: toRem(12.5px);
+        }
+    }
+}
+
+.c-container-xxl {
+    width: 100%;
+    gap: toRem(32px);
+    padding: toRem(100px) toRem(500px);
+
+    @include resDown(xl) {
+        gap: toRem(12px);
+        padding: toRem(50px) toRem(250px);
+    }
+
+    @include resDown(md) {
+        gap: toRem(6px);
+        padding: toRem(25px) toRem(50px);
+    }
+
+    &.c-container-top {
+        padding-top: toRem(50px);
+
+        @include resDown(xl) {
+            padding-top: toRem(25px);
+        }
+
+        @include resDown(md) {
+            padding-top: toRem(12.5px);
+        }
+    }
+
+    &.c-container-bottom {
+        padding-bottom: toRem(50px);
+
+        @include resDown(xl) {
+            padding-bottom: toRem(25px);
+        }
+
+        @include resDown(md) {
+            padding-bottom: toRem(12.5px);
+        }
+    }
+}
+
+.c-container-equal{
+  width: 100%;
+  gap: toRem(60px);
+  padding: toRem(150px) !important;
+
+  @include resDown(xl) {
+    gap: toRem(30px);
+    padding: toRem(75px) !important;
+  }
+
+  @include resDown(md) {
+    gap: toRem(15px);
+    padding: toRem(32.5px) !important;
+  }
+}

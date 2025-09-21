@@ -1,0 +1,353 @@
+// -----------------------------------------------------------------------------
+// This file contains all application-wide Sass variables.
+// -----------------------------------------------------------------------------
+
+
+/// Relative or absolute URL where all assets are served from
+/// @type String
+/// @example scss - When using a CDN
+///   $base-url: 'https://cdn.example.com/assets/';
+$base-url: '../../../assets/' !default;
+
+///  brand color Purble
+/// @type Color
+$color-Primary-50:  #f1eef6;
+$color-Primary-100: #d4c9e2;
+$color-Primary-200: #bfafd4;
+$color-Primary-300: #a28ac0;
+$color-Primary-400: #9074b4;
+$color-Primary-500: #7451a1;
+$color-Primary-600: #6a4a93;
+$color-Primary-700: #523a72;
+$color-Primary-800: #402d59;
+$color-Primary-900: #312244;
+
+///  brand color blue
+/// @type Color
+$color-Secondary-50:  #e7f2f8;
+$color-Secondary-100: #b6d6ea;
+$color-Secondary-200: #92c2e0;
+$color-Secondary-300: #61a7d2;
+$color-Secondary-400: #4295c9;
+$color-Secondary-500: #137bbc;
+$color-Secondary-600: #1170ab;
+$color-Secondary-700: #0d5785;
+$color-Secondary-800: #0a4467;
+$color-Secondary-900: #08344f;
+
+///  brand color Light Green
+/// @type Color
+$color-Light-Green-50:  #e9f7ee;
+$color-Light-Green-100: #bce6ca;
+$color-Light-Green-200: #9bdab0;
+$color-Light-Green-300: #6ec98c;
+$color-Light-Green-400: #51bf76;
+$color-Light-Green-500: #26af54;
+$color-Light-Green-600: #239f4c;
+$color-Light-Green-700: #1b7c3c;
+$color-Light-Green-800: #15602e;
+$color-Light-Green-900: #104a23;
+
+///  Additional color Neutral
+/// @type Color
+$color-Neutral-50:  #fbfbfb;
+$color-Neutral-100: #f3f3f3;
+$color-Neutral-200: #ededed;
+$color-Neutral-300: #e5e5e5;
+$color-Neutral-400: #e0e0e0;
+$color-Neutral-500: #d8d8d8;
+$color-Neutral-600: #c5c5c5;
+$color-Neutral-700: #999999;
+$color-Neutral-800: #777777;
+$color-Neutral-900: #5b5b5b;
+
+///  Additional color Red
+/// @type Color
+$color-Red-50:  #ffebea;
+$color-Red-100: #ffc2bf;
+$color-Red-200: #ffa5a0;
+$color-Red-300: #ff7c74;
+$color-Red-400: #ff6259;
+$color-Red-500: #ff3b30;
+$color-Red-600: #e8362c;
+$color-Red-700: #b52a22;
+$color-Red-800: #8c201a;
+$color-Red-900: #6b1914;
+
+///  Additional color Orange
+/// @type Color
+$color-Orange-50:  #fff4e6;
+$color-Orange-100: #ffdeb0;
+$color-Orange-200: #ffce8a;
+$color-Orange-300: #ffb854;
+$color-Orange-400: #ffaa33;
+$color-Orange-500: #ff9500;
+$color-Orange-600: #e88800;
+$color-Orange-700: #b56a00;
+$color-Orange-800: #8c5200;
+$color-Orange-900: #6b3f00;
+
+///  color white
+/// @type Color
+$Color-White: #FFFFFF;
+
+///  color white
+/// @type Color
+$Color-Black: #000000;
+
+/// background color default 
+/// @type Color
+$default-background: $Color-White;
+
+/// text color grey
+/// @type Color 
+$text-color: $color-Primary-900;
+
+
+
+
+/// Container's maximum width
+/// @type Length
+$max-width: 1640px !default;
+
+/// Breakpoints map
+/// @prop {String} keys - Keys are identifiers mapped to a given length
+/// @prop {Map} values - Values are actual breakpoints expressed in pixels
+$breakpoints: (
+  'small': 320px,
+  'medium': 768px,
+  'large': 1024px,
+  ) !default;
+
+// Small smartphones (portrait view)
+$screen-xs: 320px;
+
+// Small tablets and large smartphones (landscape view)
+$screen-sm: 576px;
+
+// Small tablets (portrait view)
+$screen-md: 768px;
+
+// Tablets and small desktops
+$screen-lg: 992px;
+
+// Large tablets and desktops
+$screen-xl: 1200px;
+
+// Large tablets and desktops
+$screen-xxl: 1400px;
+
+
+//font-family-------------
+$font-bold-ar:   'Cairo Bold'!default;
+$font-family-ar: 'Cairo Regular' !default;
+
+$font-bold-en:   'Inter Bold'!default;
+$font-family-en: 'Inter Regular' !default;
+
+//font-size------------
+$title-h0: 80px;
+$title-h1: 40px;
+$title-h2: 36px;
+$title-h3: 32px;
+$title-h4: 28px;
+$title-h5: 24px;
+$title-h6: 20px;
+$body-xlarge: 18px;
+$body-large: 16px;
+$body-medium: 14px;
+$body-small: 12px;
+$body-xsmall: 10px;
+$body-xxsmall: 8px;
+
+//line-height------------
+$line-height-h0: 96px;
+$line-height-h1: 60px;
+$line-height-h2: 54px;
+$line-height-h3: 48px;
+$line-height-h4: 42px;
+$line-height-h5: 36px;
+$line-height-h6: 30px;
+$line-height-xlarge: 27px;
+$line-height-large: 24px;
+$line-height-medium: 21px;
+$line-height-small: 18px;
+$line-height-xsmall: 15px;
+$line-height-xxsmall: 12px;
+
+// Transition Duration Variables
+$transition-duration-fast: 0.2s;  // Fast transition duration
+$transition-duration-normal: 0.3s; // Normal transition duration
+$transition-duration-slow: 0.5s;   // Slow transition duration
+$transition-timing-function: ease; // Default timing function for transitions
+
+
+// your custom primary color
+$kc-primary: #74509E;
+$kc-primary-hover: darken($kc-primary, 7%);
+$kc-primary-active: darken($kc-primary, 12%);
+$kc-primary-disabled: lighten($kc-primary, 20%);
+
+// override bootstrap's .btn-primary
+.btn-primary {
+    background-color: $kc-primary;
+    border-color: $kc-primary;
+    color: #fff;
+
+    &:hover,
+    &:focus {
+        background-color: $kc-primary-hover;
+        border-color: $kc-primary-hover;
+        color: #fff;
+    }
+
+    &:active,
+    &.active,
+    .show > &.dropdown-toggle {
+        background-color: $kc-primary-active;
+        border-color: $kc-primary-active;
+        color: #fff;
+    }
+
+    &:disabled,
+    &.disabled {
+        background-color: $kc-primary-disabled;
+        border-color: $kc-primary-disabled;
+        color: #f8f9fa;
+        opacity: 0.65;
+    }
+    // optional focus ring
+    &:focus {
+        box-shadow: 0 0 0 0.25rem rgba($kc-primary, .25);
+    }
+}
+
+
+.nav-link.dropdown-toggle::after {
+    display: none !important;
+}
+
+// override bootstrap's .btn-outline-primary
+.btn-outline-primary {
+    color: $kc-primary;
+    border-color: $kc-primary;
+    background-color: transparent;
+
+    &:hover,
+    &:focus {
+        color: #fff;
+        background-color: $kc-primary !important;
+        border-color: $kc-primary !important;
+    }
+
+    &:active,
+    &.active,
+    .show > &.dropdown-toggle {
+        color: #fff;
+        background-color: $kc-primary-active !important;
+        border-color: $kc-primary-active !important;
+    }
+
+    &:disabled,
+    &.disabled {
+        color: $kc-primary-disabled;
+        border-color: $kc-primary-disabled;
+        background-color: transparent;
+        opacity: 0.65;
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 0.25rem rgba($kc-primary, .25);
+    }
+}
+
+
+
+// -----------------------------------------------------------------------------
+// Override Bootstrap utility classes with your custom primary color
+// -----------------------------------------------------------------------------
+
+// Background
+.bg-primary {
+    background-color: $kc-primary !important;
+}
+
+.bg-primary-hover:hover,
+.bg-primary-hover:focus {
+    background-color: $kc-primary-hover !important;
+}
+
+.bg-primary-active:active,
+.bg-primary-active.active {
+    background-color: $kc-primary-active !important;
+}
+
+.bg-primary-disabled:disabled,
+.bg-primary-disabled.disabled {
+    background-color: $kc-primary-disabled !important;
+}
+
+// Text
+.text-primary {
+    color: $kc-primary !important;
+}
+
+.text-primary-hover:hover,
+.text-primary-hover:focus {
+    color: $kc-primary-hover !important;
+}
+
+.text-primary-active:active,
+.text-primary-active.active {
+    color: $kc-primary-active !important;
+}
+
+.text-primary-disabled:disabled,
+.text-primary-disabled.disabled {
+    color: $kc-primary-disabled !important;
+}
+
+// Border
+.border-primary {
+    border-color: $kc-primary !important;
+}
+
+.border-primary-hover:hover,
+.border-primary-hover:focus {
+    border-color: $kc-primary-hover !important;
+}
+
+.border-primary-active:active,
+.border-primary-active.active,
+.border-primary-active:focus
+{
+    border-color: $kc-primary-active !important;
+}
+
+.border-primary-disabled:disabled,
+.border-primary-disabled.disabled {
+    border-color: $kc-primary-disabled !important;
+}
+
+
+
+.c-fs-14-bold {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+
+.c-fs-14-bolder {
+    font-size: 14px;
+    font-weight: bolder;
+}
+
+
+.c-bg-primary-dark {
+    background-color: #312244 !important;
+}
+
+
+.c-bg-primary-light {
+    background-color: #523A72 !important;
+}

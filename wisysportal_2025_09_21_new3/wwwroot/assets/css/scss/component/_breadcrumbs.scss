@@ -1,0 +1,34 @@
+.breadcrumb {
+    li + li::before {
+        content: ">";
+        opacity: .55;
+        padding: 0 .5rem;
+    }
+
+    [dir="rtl"] &,
+    html[dir="rtl"] & {
+        flex-direction: row;
+
+        li + li::before {
+            content: "<";
+            padding: 0 .5rem;
+        }
+    }
+
+    .breadcrumb-item > a {
+        white-space: nowrap;
+
+        :hover {
+            color: $color-Primary-500;
+        }
+    }
+
+    .breadcrumb-item.active {
+        color: rgba(0,0,0,.65);
+    }
+}
+
+
+[dir=rtl] .breadcrumb-item + .breadcrumb-item::before {
+    float: right;
+ }

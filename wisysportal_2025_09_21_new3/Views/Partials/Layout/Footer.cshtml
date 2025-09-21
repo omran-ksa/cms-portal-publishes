@@ -1,0 +1,67 @@
+﻿@using Umbraco.Cms.Web.Common.PublishedModels
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Umbraco.Cms.Core.Models
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using System.Globalization
+@using System.Linq
+
+@{
+     var routeCulture = ViewContext?.RouteData?.Values?["culture"]?.ToString();
+
+    if (string.IsNullOrWhiteSpace(routeCulture))
+    {
+        var firstSeg = (Context.Request.Path.Value ?? "/")
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        if (firstSeg is "ar" or "en") routeCulture = firstSeg;
+    }
+
+    var currentLang = !string.IsNullOrWhiteSpace(routeCulture)
+        ? (routeCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en")
+        : "ar";
+
+     ViewData["CurrentLang"] = currentLang;
+
+    var isAr = currentLang == "ar";
+    var dir = isAr ? "rtl" : "ltr";
+
+     var home = Umbraco.ContentAtRoot().DescendantsOrSelfOfType("home")?.FirstOrDefault()
+               ?? Umbraco.AssignedContentItem;
+
+    Func<string, string, string> D = (key, fallback) =>
+    {
+        var val = Umbraco.GetDictionaryValue(key, new CultureInfo(currentLang));
+        return (string.IsNullOrWhiteSpace(val) || val == key) ? fallback : val;
+    };
+
+    // Texts depending on CURRENT LANG (not UmbracoContext culture)
+    string dAllRights = D("Footer.AllRightsReserved", isAr ? "جميع الحقوق محفوظة" : "All rights reserved");
+    string dCompanyShort = D("Footer.Company", "Wisys");
+}
+
+<footer class="py-2 py-md-2 mt-auto container-fluid px-sm-4 border-top  shadow-sm " dir="@dir">
+
+
+    <div class="">
+        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between small text-muted">
+
+            <!-- Logo -->
+            <div>
+                <img src="~/umbraco/images/logos/logo-with-company-name.png"
+                     alt="WiSysPortal"
+                     style="height:80px;max-width:68vw; transform: translateX(@(isAr ? "12px" : "-12px"));" />
+            </div>
+
+            <!-- Copyright (lang-aware) -->
+            <div class="text-center text-md-end">
+                <span dir="@dir">© @DateTime.Now.Year</span>
+                <span class="mx-1">@dAllRights</span>
+                <span class="d-none d-sm-inline"> — </span>
+                <span class="d-block d-sm-inline">@dCompanyShort</span>
+            </div>
+
+        </div>
+    </div>
+</footer>
+

@@ -1,0 +1,93 @@
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+}
+
+.rounded-top-4 {
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+}
+
+
+
+// Minimal SCSS - Only custom styles that Bootstrap can't handle
+
+// Purple gradient background
+.purple-gradient {
+    background: linear-gradient(135deg, #6b46c1 0%, #9333ea 50%, #c026d3 100%) !important;
+}
+
+// Line clamp utility (not available in Bootstrap)
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+// Hover effects and transitions
+.card {
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+    }
+}
+
+.card-img-top {
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: scale(1.05);
+    }
+}
+
+// Navigation button enhancements
+.swiper-nav-btn {
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-50%) scale(1.1) !important;
+
+        i {
+            color: #6b46c1 !important;
+        }
+    }
+}
+
+// Back link hover effect
+.back-link:hover {
+    opacity: 1 !important;
+    transform: translateX(-5px);
+
+    [dir="rtl"] & {
+        transform: translateX(5px);
+    }
+}
+
+// Swiper pagination custom colors
+.swiper-pagination-bullet {
+    background: rgba(255, 255, 255, 0.4);
+
+    &.swiper-pagination-bullet-active {
+        background: white;
+    }
+}
+
+// RTL adjustments for navigation buttons
+[dir="rtl"] {
+    .swiper-nav-btn {
+        &:first-of-type {
+            right: -25px !important;
+            left: auto !important;
+        }
+
+        &:last-of-type {
+            left: -25px !important;
+            right: auto !important;
+        }
+    }
+}

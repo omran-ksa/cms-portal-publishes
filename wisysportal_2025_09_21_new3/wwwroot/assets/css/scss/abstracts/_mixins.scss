@@ -1,0 +1,349 @@
+// -----------------------------------------------------------------------------
+// This file contains all application-wide Sass mixins.
+// -----------------------------------------------------------------------------
+
+/// Event wrapper
+/// @author Harry Roberts
+/// @param {Bool} $self [false] - Whether or not to include current selector
+/// @link https://twitter.com/csswizardry/status/478938530342006784 Original tweet from Harry Roberts
+@mixin on-event($self: false) {
+  @if $self {
+
+    &,
+    &:hover,
+    &:active,
+    &:focus,
+    &:focus-within {
+      @content;
+    }
+  }
+
+  @else {
+
+    &:hover,
+    &:active,
+    &:focus,
+    &:focus-within {
+      @content;
+    }
+  }
+}
+
+/// Make a context based selector a little more friendly
+/// @author Kitty Giraudel
+/// @param {String} $context
+@mixin when-inside($context) {
+  #{$context} & {
+    @content;
+  }
+}
+
+// Mixin for responsive breakpoints (max-width)
+// Usage:
+// .element {
+//   @include resDown(xl) {
+//     font-size: 1.5rem; // For large desktops and tablets
+//   }
+// }
+@mixin resDown($breakpoint) {
+  @if $breakpoint ==xs {
+    @media (max-width: $screen-xs) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==sm {
+    @media (max-width: $screen-sm) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==md {
+    @media (max-width: $screen-md) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==lg {
+    @media (max-width: $screen-lg) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==xl {
+    @media (max-width: $screen-xl) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==xxl {
+    @media (max-width: $screen-xxl) {
+      @content;
+    }
+  }
+
+  @else {
+    @warn "Unknown breakpoint '#{$breakpoint}', use 'xs', 'sm', 'md', 'lg', 'xl', or 'xxl'.";
+  }
+}
+
+// Mixin for responsive breakpoints (min-width)
+// Usage:
+// .element {
+//   @include resUp(lg) {
+//     font-size: 1.5rem; // For large desktops and tablets
+//   }
+// }
+@mixin resUp($breakpoint) {
+  @if $breakpoint ==xs {
+    @media (min-width: $screen-xs) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==sm {
+    @media (min-width: $screen-sm) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==md {
+    @media (min-width: $screen-md) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==lg {
+    @media (min-width: $screen-lg) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==xl {
+    @media (min-width: $screen-xl) {
+      @content;
+    }
+  }
+
+  @else if $breakpoint ==xxl {
+    @media (min-width: $screen-xxl) {
+      @content;
+    }
+  }
+
+  @else {
+    @warn "Unknown breakpoint '#{$breakpoint}', use 'xs', 'sm', 'md', 'lg', 'xl', or 'xxl'.";
+  }
+}
+
+// Mixin for adding dynamic box shadows with selectable direction
+// Parameters:
+// $direction: Direction of the shadow (can be 'top', 'bottom', 'left', 'right', or 'all')
+// $offset: The offset for the shadow (default: 10px)
+// $blur: The blur radius of the shadow (default: 10px)
+// $spread: The spread radius of the shadow (default: 0px)
+// $color: The color of the shadow (default: black)
+// $opacity: The opacity of the shadow (default: 0.15)
+//
+// Example usage:
+// .element-top {
+//   @include boxShadow(top, 10px, 10px, 0px, #000000, 0.3); // Shadow at the top
+// }
+@mixin boxShadow($direction: all, $offset: 10px, $blur: 10px, $spread: 0px, $color: black, $opacity: 0.15) {
+  @if $direction ==top {
+    box-shadow: 0 (-$offset) $blur $spread rgba($color, $opacity);
+  }
+
+  @else if $direction ==bottom {
+    box-shadow: 0 $offset $blur $spread rgba($color, $opacity);
+  }
+
+  @else if $direction ==left {
+    box-shadow: (-$offset) 0 $blur $spread rgba($color, $opacity);
+  }
+
+  @else if $direction ==right {
+    box-shadow: $offset 0 $blur $spread rgba($color, $opacity);
+  }
+
+  @else if $direction ==all {
+    box-shadow: 0 0 $blur $spread rgba($color, $opacity); // Uniform shadow for all sides
+  }
+
+  @else {
+    @warn "Unknown direction '#{$direction}', use 'top', 'bottom', 'left', 'right', or 'all'.";
+  }
+}
+
+
+// Mixin for creating a border-based shadow effect with selectable direction
+// Parameters:
+// $direction: Direction of the borderShadow (can be 'top', 'bottom', 'left', 'right', or 'all')
+// $width: The width of the borderShadow (default: 5px)
+// $color: The color of the borderShadow (default: black)
+// $opacity: The opacity of the borderShadow (default: 0.15)
+//
+// Example usage:
+// .element-top {
+//   @include borderShadow(top, 5px, #000000, 0.3); // Shadow as border at the top
+// }
+@mixin borderShadow($direction: all, $width: 5px, $color: black, $opacity: 0.15) {
+  $rgbaColor: rgba($color, $opacity);
+
+  @if $direction ==top {
+    border-top: $width solid $rgbaColor;
+  }
+
+  @else if $direction ==bottom {
+    border-bottom: $width solid $rgbaColor;
+  }
+
+  @else if $direction ==left {
+    border-left: $width solid $rgbaColor;
+  }
+
+  @else if $direction ==right {
+    border-right: $width solid $rgbaColor;
+  }
+
+  @else if $direction ==all {
+    border: $width solid $rgbaColor;
+  }
+
+  @else {
+    @warn "Unknown direction '#{$direction}', use 'top', 'bottom', 'left', 'right', or 'all'.";
+  }
+}
+
+
+// Mixin for applying styles based on language direction
+// Usage:
+// @include langStyles(ar) {
+//   // Your content or styles for Arabic
+// }
+@mixin langStyles($lang) {
+  &:lang(#{$lang}) {
+    @content; // Use the passed content inside the specific language selector
+  }
+}
+
+
+// Mixins for reusable styles
+// Usage:
+// @include text-style($body-xlarge, $line-height-xlarge, $font-weight-bold);
+@mixin text-style($size, $line-height, $font-family) {
+    font-size: toRem($size);
+    line-height: toRem($line-height);
+    font-family: $font-family;
+}
+
+
+// Mixins for reusable styles
+// Usage:
+// @include text-style($body-xlarge, $line-height-xlarge, $font-weight-bold);
+@mixin text-style-important($size, $line-height, $font-family) {
+    font-size: toRem($size) !important;
+    line-height: toRem($line-height) !important;
+    font-family: $font-family !important;
+}
+
+
+// Set Image To Center Fit Conver
+// Usage:
+// @include img-fit-conver();
+@mixin img-fit-conver($position: 'center') {
+  object-fit: cover;
+  object-position: $position;
+}
+
+
+/// Mixin for creating a flexible grid layout using flexItem
+/// with responsive item counts for different screen sizes.
+///
+/// @param $item-for-xs - Number of items per row for extra-small screens (default 0-576px)
+/// @param $item-for-sm - Number of items per row for small screens (576px-768px)
+/// @param $item-for-md - Number of items per row for medium screens (768px-992px)
+/// @param $item-for-lg - Number of items per row for large screens (992px-1200px)
+/// @param $item-for-xl - Number of items per row for extra-large screens (1200px-1400px)
+/// @param $item-for-xxl - Number of items per row for extra-extra-large screens (1400px+)
+@mixin flexItem($item-for-xs, $item-for-sm, $item-for-md, $item-for-lg, $item-for-xl, $item-for-xxl) {
+  display: flex;
+  flex-wrap: wrap;
+
+  // Default styles for extra-small screens (xs)
+  >* {
+    flex: 0 0 calc(100% / #{$item-for-xs});
+    max-width: calc(100% / #{$item-for-xs});
+    @content;
+  }
+
+  // Small screens (sm)
+  @include resUp(sm) {
+    >* {
+      flex: 0 0 calc(100% / #{$item-for-sm});
+      max-width: calc(100% / #{$item-for-sm});
+    }
+  }
+
+  // Medium screens (md)
+  @include resUp(md) {
+    >* {
+      flex: 0 0 calc(100% / #{$item-for-md});
+      max-width: calc(100% / #{$item-for-md});
+    }
+  }
+
+  // Large screens (lg)
+  @include resUp(lg) {
+    >* {
+      flex: 0 0 calc(100% / #{$item-for-lg});
+      max-width: calc(100% / #{$item-for-lg});
+    }
+  }
+
+  // Extra-large screens (xl)
+  @include resUp(xl) {
+    >* {
+      flex: 0 0 calc(100% / #{$item-for-xl});
+      max-width: calc(100% / #{$item-for-xl});
+    }
+  }
+
+  // Extra-extra-large screens (xxl)
+  @include resUp(xxl) {
+    >* {
+      flex: 0 0 calc(100% / #{$item-for-xxl});
+      max-width: calc(100% / #{$item-for-xxl});
+    }
+  }
+}
+
+
+///
+///@mixin AutoDirection
+///Dynamically applies text direction styles based on language and a boolean flag.
+///
+///@param {Boolean} $direction - Determines the default language direction:
+///       true  => Arabic (RTL), English (LTR)
+///       false => Arabic (LTR), English (RTL)
+///@default $default - Optional fallback direction (if needed in the future).
+///
+ @mixin AutoDirection($direction) {
+  @if $direction == true {
+    @include langStyles(ar) {
+      direction: rtl; // Arabic uses right-to-left
+    }
+  
+    @include langStyles(en) {
+      direction: ltr; // English uses left-to-right
+    }
+  } @else {
+    @include langStyles(ar) {
+      direction: ltr; // Arabic uses left-to-right (inverted case)
+    }
+    
+    @include langStyles(en) {
+      direction: rtl; // English uses right-to-left (inverted case)
+    }
+  }
+}

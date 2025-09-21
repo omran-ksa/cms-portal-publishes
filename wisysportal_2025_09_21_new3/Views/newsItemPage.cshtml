@@ -1,0 +1,245 @@
+﻿@using System.Globalization
+@using Umbraco.Cms.Core.Models
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Cms.Core.Strings
+@using Umbraco.Extensions
+@using Umbraco.Models
+@using Wisys.CMS.UI.Breadcrumbs
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<NewsPageModel>
+
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback;
+@inject IShortStringHelper ShortStringHelper
+
+@{
+    Layout = "layout.cshtml";
+
+
+
+    // -------------------- Inputs from controller --------------------
+    var newsSlug = ViewData["NewsSlug"]?.ToString();
+    var newsId = ViewData["NewsId"]?.ToString();
+
+    // -------------------- Collect & pick selected news item --------------------
+    var blocks = Model.Cards ?? BlockListModel.Empty;
+    var allCards = blocks.Select(b => new CardModel(b.Content, PublishedValueFallback)).ToList();
+    CardModel? selectedNewsItem = null;
+
+    // choose item (id -> hash -> slug)
+    if (!string.IsNullOrWhiteSpace(newsId) && Guid.TryParse(newsId, out var gid))
+        selectedNewsItem = allCards.FirstOrDefault(c => c.Key == gid);
+    if (selectedNewsItem is null && int.TryParse(newsId, out var hid))
+        selectedNewsItem = allCards.FirstOrDefault(c => c.Key.GetHashCode() == hid);
+    if (selectedNewsItem is null && !string.IsNullOrWhiteSpace(newsSlug))
+        selectedNewsItem = allCards.FirstOrDefault(c => c.Title?.ToUrlSegment(ShortStringHelper, CultureInfo.CurrentUICulture.Name) == newsSlug);
+    selectedNewsItem ??= allCards.FirstOrDefault();
+
+    if (selectedNewsItem is null)
+    {
+        <div class="container my-5"><div class="alert alert-warning">No news items found</div></div>
+        ;
+        return;
+    }
+
+    // -------------------- Language, culture & direction --------------------
+    // Prefer ViewData (current request). Fall back to TempData without consuming it.
+      var routeCulture = ViewContext?.RouteData?.Values?["culture"]?.ToString();
+
+    if (string.IsNullOrWhiteSpace(routeCulture))
+    {
+        var firstSeg = (Context.Request.Path.Value ?? "/")
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        if (firstSeg is "ar" or "en") routeCulture = firstSeg;
+    }
+
+    var currentLang = !string.IsNullOrWhiteSpace(routeCulture)
+        ? (routeCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en")
+        : "ar";
+
+     ViewData["CurrentLang"] = currentLang;
+
+    var isAr = currentLang == "ar";
+    var dir = isAr ? "rtl" : "ltr";
+
+
+    TempData.Keep("CurrentLang");
+
+
+    // UI culture for dates in the "More news" section (kept as you had it)
+    var ui = (currentLang?.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ?? false)
+             ? new CultureInfo("ar")
+             : new CultureInfo("en");
+
+
+    ViewData["BreadcrumbReplaceLast"] = new BreadcrumbItem
+    {
+        Title = selectedNewsItem?.Title ?? (isAr ? "تفاصيل الخبر" : "News Details"),
+        Url = null,
+        Active = true
+    };
+
+    // -------------------- Strings --------------------
+    string NewsIndexTitle = isAr ? "الأخبار" : "News";
+    string HomeTitle = isAr ? "الرئيسية" : "Home";
+    var moreTitle = isAr ? "المزيد من الأخبار" : "More news";
+
+    // -------------------- Background (same logic/feel as slider) --------------------
+    var bgColor = Model.Value<string>("backgroundColor");
+    var bgImage = Model.Value<MediaWithCrops>("backgroundImage");
+    var bgStyle = "background: linear-gradient(19deg, #6b46c1 0%, #9333ea 50%, #c026d3 100%);";
+    if (!string.IsNullOrWhiteSpace(bgColor) && (bgColor.StartsWith("#") || bgColor.StartsWith("rgb")))
+        bgStyle = $"background: {bgColor};";
+    if (bgImage != null)
+        bgStyle = $"background:linear-gradient(19deg, rgba(192, 38, 211, 0.8) 100%),  rgba(147, 51, 234, 0.8) 50%, rgba(107, 70, 193, 0.8) 0%, url('{bgImage.GetCropUrl()}'); background-size: cover; background-position: center;";
+
+    // -------------------- More news (newest 3 excluding current) --------------------
+    var moreCards = blocks
+        .Select(b => new CardModel(b.Content, PublishedValueFallback))
+        .Where(c => selectedNewsItem == null || c.Key != selectedNewsItem.Key)
+        .OrderByDescending(c => c.Date)
+        .Take(3)
+        .ToList();
+
+    string GetNewsDetailUrl(CardModel newsItem)
+    {
+        var slug = newsItem.Title?.ToUrlSegment(ShortStringHelper, ui.Name) ?? "news-item";
+        var id = newsItem.Key.ToString();
+        return $"/{ui.Name}/news/details/{slug}/{id}";
+    }
+}
+
+
+<main class="position-relative container justify-content-center" dir="@dir">
+    <!-- raised white article card overlapping header -->
+    <div class=" mb-2">
+        <div class="w-100">
+            <article class="bg-white px-3 px-md-4 px-lg-5 position-relative mt-n4 mt-md-n5 z-1 pb-4">
+
+                <!-- title (bold, RTL-aware) + date (muted, aligned to side) -->
+                <header class="mb-3 mb-md-4">
+                     <h4 class="fw-bold  mt-2 mb-0  text-start">
+                        @selectedNewsItem.Title
+                    </h4>
+                    <div class="d-flex justify-content-start">
+                        @if (selectedNewsItem.Date != default)
+                        {
+                            <small class="text-muted d-inline-flex align-items-center gap-2 mt-1">
+                                <i class="bi bi-calendar3"></i>
+                                <time>@selectedNewsItem.Date.ToString("dd MMMM yyyy", ui)</time>
+                            </small>
+                        }
+                    </div>
+                </header>
+
+                 @if (selectedNewsItem.Image != null)
+                {
+                    <figure class="my-3 my-md-4">
+                        <img src="@selectedNewsItem.Image.Url()"
+                             alt="@selectedNewsItem.Title"
+                             class="img-fluid w-75 mx-auto d-block rounded-4 shadow-sm object-fit-cover" />
+                    </figure>
+                }
+
+                <!-- body text -->
+                <div class="fs-5 lh-lg text-dark-emphasis text-start">
+                    @if (!string.IsNullOrEmpty(selectedNewsItem.Description))
+                    {
+                        @Html.Raw(selectedNewsItem.Description)
+                    }
+
+                    @if (selectedNewsItem.MoreInfo != null)
+                    {
+                        @Html.Raw(selectedNewsItem.MoreInfo)
+                    }
+                </div>
+
+            </article>
+        </div>
+    </div>
+</main>
+
+
+
+
+@if (moreCards.Any())
+{
+    <section class="py-5 position-relative overflow-hidden" style="@bgStyle; min-height: 600px;" dir="@dir">
+        <div class="container position-relative" style="z-index:2;">
+
+            <div class="row align-items-center justify-content-between mb-5">
+                <!-- Section title -->
+                <div class="col-auto">
+                    <h3 class="fw-semibold text-white mb-0">@moreTitle</h3>
+                </div>
+
+                <!-- View all button -->
+                <div class="col-auto">
+                    <a href="@Model.Url()" class="btn btn-outline-light rounded-pill d-inline-flex align-items-center gap-2">
+                        @(isAr ? "عرض المزيد" : "View All")
+                        <i class="bi @(isAr ? "bi-chevron-left" : "bi-chevron-right")"></i>
+
+                    </a>
+                </div>
+            </div>
+
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                @foreach (var card in moreCards)
+                {
+                    var img = card.Image;
+                    var url = GetNewsDetailUrl(card);
+
+                    <div class="col d-flex">
+                        <div class="card h-100 shadow-lg border-0 position-relative overflow-hidden w-100"
+                             style="border-radius:20px; transition:all .3s ease;">
+                            @if (img != null)
+                            {
+                                <div class="position-relative overflow-hidden" style="aspect-ratio:16/9;">
+                                    <img src="@img.Url()" alt="@img.Name"
+                                         class="card-img-top w-100 h-100 object-fit-cover"
+                                         loading="lazy"
+                                         style="border-radius: 8px 8px 0 0; transition:transform .3s ease;" />
+                                </div>
+                            }
+
+                            <div class="card-body p-4 d-flex flex-column">
+                                @if (card.Date != default)
+                                {
+                                    <div class="text-muted small fw-medium mb-3 @(isAr ? "text-start" : "text-end")">
+                                        @card.Date.ToString("dd MMMM yyyy", ui)
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(card.Title))
+                                {
+                                    <h3 class="h5 fw-bold mb-3 @(isAr ? "text-start" : "text-end")" style="color:#1f2937;">
+                                        @card.Title
+                                    </h3>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(card.Description))
+                                {
+                                    <p class="text-muted flex-grow-1 @(isAr ? "text-start" : "text-end")"
+                                       style="line-height:1.6; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
+                                        @card.Description
+                                    </p>
+                                }
+
+                                <a class="stretched-link" href="@url" aria-label="@card.Title"></a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- subtle pattern overlay -->
+        <div class="position-absolute top-0 start-0 w-100 h-100"
+             style="background-image:
+                        radial-gradient(circle at 20% 50%, rgba(255,255,255,.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255,255,255,.03) 0%, transparent 50%);
+                        pointer-events:none; z-index:1;">
+        </div>
+    </section>
+}

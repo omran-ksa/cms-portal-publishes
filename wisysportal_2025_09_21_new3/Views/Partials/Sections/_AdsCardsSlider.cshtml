@@ -1,0 +1,286 @@
+﻿@using System.Globalization
+@using Umbraco.Cms.Core.Models
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Cms.Core.Strings
+@using Umbraco.Extensions
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<IPublishedElement>
+
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback;
+@inject IShortStringHelper ShortStringHelper
+
+@{
+    // ===== Language / RTL =====
+    var currentLang = (ViewData["CurrentLang"] as string)
+                      ?? (TempData.Peek("CurrentLang") as string)
+                      ?? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var ui = currentLang?.StartsWith("ar", StringComparison.OrdinalIgnoreCase) == true
+             ? new CultureInfo("ar")
+             : new CultureInfo("en");
+
+    var isAr = ui.TwoLetterISOLanguageName == "ar";
+
+
+    var advertisementsImagesList = Model.Value<IEnumerable<MediaWithCrops>>("AdvertisementsImages")?
+        .OrderBy(i => i.CreateDate)
+        .ToList() ?? new List<MediaWithCrops>();
+
+    // var blocks = Model.Value<BlockListModel>("AdsCards") ?? BlockListModel.Empty;
+
+    // var adsCards = blocks.Select(b => new CardModel(b.Content, PublishedValueFallback))
+    //                   .OrderByDescending(c => c.Date);
+
+    // Unique ids
+    var sid = $"heroInfo-{Guid.NewGuid():N}";
+    var prevId = $"{sid}-prev";
+    var nextId = $"{sid}-next";
+    var pagId = $"{sid}-pag";
+}
+
+<div class="container-fluid" dir="@(isAr ? "rtl" : "ltr")">
+    <!-- Row 1: Pagination Controls -->
+    <div class="row my-auto">
+        <div class="col-12">
+            <hr class="divider text-muted "/>
+
+            <div class=" align-items-center justify-content-between  my-3 position-relative row">
+                <h3 class="col-6 h5 fw-bold mb-0 @(isAr ? "text-end" : "text-start")">
+                    @(isAr ? "الإعلانات" : "Advertisements")
+                </h3>
+                <!-- Navigation Buttons -->
+                <div class="col-6 d-flex align-items-center gap-2 justify-content-end px-0">
+                    <button id="@prevId" type="button"
+                            class="ph-btn ph-btn--icon d-flex align-items-center justify-content-center"
+                            aria-label="Previous">
+                        <i class="fa-solid @(isAr ? "fa-chevron-right" : "fa-chevron-left")"></i>
+                    </button>
+                    <button id="@nextId" type="button"
+                            class="ph-btn ph-btn--icon d-flex align-items-center justify-content-center"
+                            aria-label="Next">
+                        <i class="fa-solid @(isAr ? "fa-chevron-left" : "fa-chevron-right")"></i>
+                    </button>
+                </div>
+                <!-- Pagination Dots -->
+@*                 <div id="@pagId" class="swiper-pagination  d-flex align-items-center gap-2 w-100 "></div>
+ *@            </div>
+         
+        </div>
+    </div>
+
+    <!-- Row 2: Image Slider -->
+    <div class="row">
+        <div class="col-12 px-0">
+            <div id="@sid" class="swiper rounded-3">
+                <div class="swiper-wrapper  rounded-3">
+
+                    @foreach (var image in advertisementsImagesList)
+                    {
+                        <div class="swiper-slide rounded-3">
+                            <div class="position-relative overflow-hidden rounded-3 shadow-lg">
+                                @if (image != null)
+                                {
+                                    <img src="@image.Url()"
+                                         alt="@image.Name"
+                                         class="w-100 h-100 object-fit-cover"
+                                         style="aspect-ratio: 16/9; transition: transform 0.6s ease;"
+                                         loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light d-flex align-items-center justify-content-center text-muted"
+                                         style="aspect-ratio: 16/9;">
+                                        <i class="bi bi-image fs-1"></i>
+                                    </div>
+                                }
+
+                                <!-- Optional overlay for better visual effect -->
+                                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-0 transition-all rounded-3"
+                                     style="transition: opacity 0.3s ease;"></div>
+                            </div>
+                        </div>
+                    }
+
+               @*      @foreach (var ad in adsCards)
+                    {
+                        <div class="swiper-slide">
+                            <div class="position-relative overflow-hidden rounded-3 shadow-lg">
+                                @if (ad.Image != null)
+                                {
+                                    <img src="@ad.Image.Url()"
+                                         alt="@ad.Image.Name"
+                                         class="w-100 h-100 object-fit-cover"
+                                         style="aspect-ratio: 16/9; transition: transform 0.6s ease;"
+                                         loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light d-flex align-items-center justify-content-center text-muted"
+                                         style="aspect-ratio: 16/9;">
+                                        <i class="bi bi-image fs-1"></i>
+                                    </div>
+                                }
+
+                                <!-- Optional overlay for better visual effect -->
+                                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-0 transition-all rounded-3"
+                                     style="transition: opacity 0.3s ease;"></div>
+                            </div>
+                        </div>
+                    } *@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const id = '@sid';
+
+        function init() {
+            const root = document.getElementById(id);
+            if (!root || root._inited) return;
+            root._inited = true;
+            @* slide *@
+            new Swiper(root, {
+                effect: 'slide',
+                speed: 1300,
+                spaceBetween: 0,
+                centeredSlides: true,
+                loop: true,
+                autoplay: {
+                    delay: 1000,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true
+                },
+                navigation: {
+                    nextEl: '#@nextId',
+                    prevEl: '#@prevId'
+                },
+                pagination: {
+                    el: '#@pagId',
+                    clickable: true,
+                    dynamicBullets: true,
+                    dynamicMainBullets: 3
+                },
+                breakpoints: {
+                    768: {
+                        spaceBetween: 20
+                    },
+                    992: {
+                        spaceBetween: 30
+                    }
+                },
+                on: {
+                    slideChangeTransitionStart: function(swiper) {
+                        // Add subtle scale animation to active slide
+                        const slides = swiper.slides;
+                        slides.forEach((slide, index) => {
+                            const img = slide.querySelector('img');
+                            if (img) {
+                                if (index === swiper.activeIndex) {
+                                    img.style.transform = 'scale(1.02)';
+                                } else {
+                                    img.style.transform = 'scale(1)';
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Initialize when ready
+        function whenReady(fn) {
+            if (document.readyState !== 'loading') {
+                fn();
+            } else {
+                document.addEventListener('DOMContentLoaded', fn);
+            }
+        }
+
+        function waitSwiper(tries = 0) {
+            if (window.Swiper) {
+                whenReady(init);
+            } else if (tries < 80) {
+                setTimeout(() => waitSwiper(tries + 1), 75);
+            } else {
+                console.error('Swiper not found');
+            }
+        }
+
+        waitSwiper();
+    })();
+</script>
+
+<style>
+    /* Original pagination colors and design */
+    .swiper-pagination {
+        position: absolute !important;
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .swiper-pagination-bullet {
+        width: 22px !important;
+        height: 8px !important;
+        border-radius: 6px !important;
+        background: #e5d8ff !important;
+        opacity: 1 !important;
+        transition: width 0.25s ease, background 0.25s ease !important;
+    }
+
+    .swiper-pagination-bullet-active {
+        width: 36px !important;
+        background: #7d5ab8 !important;
+    }
+
+    /* Original button styles */
+    .ph-btn {
+        border: 0;
+        outline: 0;
+        background: #f3ecff;
+        color: #6c4aa7;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+        .ph-btn:hover {
+            transform: translateY(-1px);
+            background: #6c4aa7;
+            color: #fff;
+        }
+
+        .ph-btn:active {
+            transform: translateY(0);
+        }
+
+    /* Hover effects for slider */
+    .swiper-slide:hover .position-absolute {
+        opacity: 0.1 !important;
+    }
+
+    /* RTL support for mobile */
+   @@media (max-width: 767.98px) {
+        .d-flex.justify-content-between
+
+    {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .swiper-pagination {
+        order: 2;
+    }
+
+    .d-flex.gap-2 {
+        order: 1;
+    }
+
+    }
+</style>

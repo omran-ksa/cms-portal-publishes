@@ -1,0 +1,388 @@
+﻿page#home {
+    .landing {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        text-align: start;
+        z-index: 2;
+
+        > .context {
+            flex: 0 0 35%;
+            max-width: 35%;
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            gap: toRem(30px);
+
+            @include resDown(xl) {
+                flex: 0 0 50%;
+                max-width: 50%;
+                gap: toRem(15px);
+            }
+
+            @include resDown(md) {
+                flex: 0 0 100%;
+                max-width: 100%;
+                gap: toRem(10px);
+            }
+        }
+
+        > .image {
+            flex: 0 0 65%;
+            max-width: 60%;
+            height: 100%;
+            align-content: center;
+
+            img {
+                width: 100%;
+                aspect-ratio: 16 / 9;
+                object-fit: cover;
+                object-position: top;
+                border-radius: toRem(30px);
+                border: toRem(10px) solid $color-Primary-50;
+
+                @include resDown(xl) {
+                    aspect-ratio: 16 / 12;
+                }
+            }
+
+            @include resDown(xl) {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            @include resDown(md) {
+                display: none;
+            }
+        }
+    }
+
+    .slider-service {
+        background-color: $color-Primary-50;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        gap: toRem(80px);
+        padding: toRem(100px) toRem(0px);
+
+        @include resDown(xl) {
+            gap: toRem(40px);
+            padding: toRem(50px) toRem(0px);
+        }
+
+        @include resDown(md) {
+            gap: toRem(20px);
+            padding: toRem(25px) toRem(0px);
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            gap: toRem(24px);
+            margin: toRem(0px) toRem(120px);
+
+            @include resDown(xl) {
+                gap: toRem(12px);
+                margin: toRem(0px) toRem(60px);
+            }
+
+            @include resDown(md) {
+                gap: toRem(6px);
+                margin: toRem(0px) toRem(30px);
+            }
+        }
+
+        .container-swiper-wrapper {
+            position: relative;
+            width: 100%;
+
+            #slider-service-swiper {
+                position: unset;
+                margin: toRem(0px) toRem(30px + 60px);
+
+                @include resDown(xl) {
+                    margin: toRem(0px) toRem(15px + 60px);
+                }
+
+                @include resDown(md) {
+                    margin: toRem(0px) toRem(10px + 60px);
+                }
+
+                .swiper-wrapper {
+                    position: relative;
+                    z-index: 3;
+                    align-items: center;
+
+                    .swiper-slide {
+                        transition: 0.7s;
+                        width: 29% !important;
+
+                        @include resDown(xl) {
+                            width: 33.3% !important;
+                        }
+
+                        @include resDown(md) {
+                            width: 100% !important;
+                        }
+
+                        &.swiper-slide-active {
+                            width: 42% !important;
+
+                            @include resDown(xl) {
+                                width: 33.3% !important;
+                            }
+
+                            @include resDown(md) {
+                                width: 100% !important;
+                            }
+                        }
+                    }
+                }
+
+                .swiper-wrapper-button {
+                    position: absolute;
+                    width: 100%;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    align-content: center;
+
+                    .container-swiper-wrapper-button {
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: space-between;
+                        margin: toRem(30px);
+
+                        @include resDown(xl) {
+                            margin: toRem(15px);
+                        }
+
+                        @include resDown(md) {
+                            margin: toRem(10px);
+                        }
+
+                        .custom-services-swiper-button-prev,
+                        .custom-services-swiper-button-next {
+                            img {
+                                width: 60px;
+                                height: 60px;
+                                object-fit: cover;
+
+                                @include resDown(xl) {
+                                    width: 55px;
+                                    height: 55px;
+                                }
+
+                                @include resDown(md) {
+                                    width: 50px;
+                                    height: 50px;
+                                }
+
+                                @include langStyles(ar) {
+                                    transform: rotate(0deg);
+                                }
+
+                                @include langStyles(en) {
+                                    transform: rotate(180deg);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .our-partners {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            gap: toRem(24px);
+
+            @include resDown(xl) {
+                gap: toRem(12px);
+            }
+
+            @include resDown(md) {
+                gap: toRem(6px);
+            }
+        }
+
+        group {
+            @include flexItem(2, 2, 3, 4, 5, 5) {
+                padding: toRem(16px);
+
+                @include resDown(xl) {
+                    padding: toRem(8px);
+                }
+
+                @include resDown(md) {
+                    padding: toRem(4px);
+                }
+            }
+        }
+
+        button {
+            width: fit-content;
+        }
+    }
+}
+
+
+
+/* tokens */
+$portal-primary: #74509E;
+$portal-hero-start: #5b428a;
+$portal-hero-end: #6847a2;
+$portal-mini-bg: #ffffff;
+$portal-mini-corner: #f3f2f7;
+$portal-lavender: #dcd0ec;
+$portal-deep: #6a4a93;
+$portal-radius: 16px;
+
+
+.portal-hero {
+    min-height: 11.5rem;
+    border: 0;
+    border-radius: $portal-radius;
+    background-color: $portal-primary; //linear-gradient(45deg, $portal-hero-start 0%, $portal-hero-end 100%);
+    .portal-hero__avatar {
+        width: 84px;
+        height: 84px;
+    }
+}
+
+/* ===== Section 1 minis ===== */
+.portal-mini {
+    min-height: 10.5rem;
+    border: 0;
+    border-radius: $portal-radius;
+    background-color: $portal-mini-bg;
+    position: relative;
+    overflow: hidden;
+
+    .portal-mini__corner {
+        width: 44px;
+        height: 44px;
+        color: $portal-hero-start;
+        background-color: $portal-mini-corner;
+        top: 12px;
+        inset-inline-start: 12px;
+
+        i {
+            font-size: 1.25rem;
+        }
+
+        border-radius: 12px;
+        transition: background-color .2s ease, color .2s ease;
+    }
+
+    .card-body {
+        gap: .25rem;
+    }
+    /* On hover: turn all icons & text white and fill the corner pill */
+    &:hover,
+    &:focus-within {
+        background-color: $portal-primary;
+
+        .home-mini-card {
+            color: #fff;
+        }
+
+        .home-mini-card i {
+            color: #fff !important;
+        }
+
+        .portal-mini__corner {
+            background-color: rgba(255,255,255,.18);
+            color: #fff;
+        }
+    }
+}
+
+/* ===== Section 2 tiles ===== */
+.portal-tile {
+    border: 0;
+    border-radius: $portal-radius;
+    min-height: 14rem;
+    position: relative;
+    background: $portal-lavender;
+
+    &--news {
+        background: linear-gradient(180deg, #7c5fb4 0%, #6847a2 100%);
+        color: #fff;
+    }
+
+    &--articles {
+        background: linear-gradient(180deg, #7c5fb4 0%, #6847a2 100%);
+        color: #fff;
+    }
+
+    .portal-tile__icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: rgba(255,255,255,.65);
+        top: 16px;
+        inset-inline-end: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+            font-size: 1.35rem;
+        }
+    }
+
+    h6 {
+        color: #fff;
+    }
+
+    .portal-btn-soft {
+        background: #fff;
+        border: 0;
+        box-shadow: 0 1px 0 rgba(0,0,0,.05);
+        border-radius: 999px;
+        color: $portal-deep;
+        transition: transform .15s ease, box-shadow .15s ease;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0,0,0,.12);
+        }
+    }
+}
+
+/* icon sizes */
+.fa-lg {
+    font-size: 1.25rem;
+}
+
+.fa-xl {
+    font-size: 1.35rem;
+}
+
+.fa-2xl {
+    font-size: 1.75rem;
+}
+
+/* responsive polish */
+@media (min-width: 1200px) {
+    .portal-hero {
+        min-height: 12rem;
+    }
+
+    .portal-tile {
+        min-height: 9rem;
+    }
+}

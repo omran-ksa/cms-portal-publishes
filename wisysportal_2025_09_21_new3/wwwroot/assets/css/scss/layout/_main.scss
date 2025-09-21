@@ -1,0 +1,10 @@
+// -----------------------------------------------------------------------------
+// This file contains all styles related to the main of the site/application.
+// -----------------------------------------------------------------------------
+body {
+    > swup > main {
+        transition: 0.2s;
+        padding-top: var(--header-height, toRem(88.88px));
+        min-height: var(--main-min-height, toRem(676px));
+    }
+}

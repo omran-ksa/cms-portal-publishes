@@ -1,0 +1,26 @@
+page#contact-us,
+.contact-us {
+    .form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+
+    .other-contact-method {
+        .title {
+            > * {
+                @include text-style($title-h1, $line-height-h1, var(--font-bold));
+
+                @include resDown(md) {
+                    @include text-style($title-h3, $line-height-h3, var(--font-bold));
+                }
+            }
+        }
+    }
+}

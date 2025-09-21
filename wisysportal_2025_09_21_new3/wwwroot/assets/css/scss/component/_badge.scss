@@ -1,0 +1,11 @@
+.c-badge{
+    border-radius: toRem(50px);
+    padding: toRem(10px) toRem(16px);
+    gap: toRem(10px);
+
+    &.c-badge-success{
+        color: $Color-White;
+        background-color: $color-Light-Green-500;
+        @include text-style($body-large, $line-height-large, var(--font-family));
+    }
+}

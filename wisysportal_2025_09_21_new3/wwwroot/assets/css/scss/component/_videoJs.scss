@@ -1,0 +1,67 @@
+.video-container {
+    position: relative;
+    width: 100% !important; 
+    background-color: $Color-Black;
+    filter: brightness(0);
+
+    .video-js {
+        width: 100%;
+        height: unset !important;
+        padding-top: 0 !important;
+        line-height: 0 !important;
+        aspect-ratio: 16 / 9;
+
+        .vjs-tech {
+            position: relative;
+            width: 100%;
+            height: unset !important;
+        }
+        .vjs-poster {
+            img {
+                width: 100% !important;
+                object-position: top;
+                object-fit: cover;
+                filter: brightness(0.3);
+            }
+        }
+        .vjs-big-play-button {
+            display: none !important;
+        }
+    }
+
+    &.loaded {
+        transition: filter 0.5s;
+        background-color: $default-background;
+        filter: brightness(1); /* Restore to original color */
+    }
+
+    .custom-play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: toRem(90px);
+        height: toRem(90px);
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 6;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+
+        &.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.8);
+        }
+
+        svg {
+            width: toRem(24px);
+            height: 100%;
+            padding-left: toRem(4px);
+            color: $color-Primary-500;
+        }
+    }
+}

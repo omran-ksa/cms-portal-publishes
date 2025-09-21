@@ -1,0 +1,312 @@
+.c-card {
+    border-radius: toRem(15px);
+
+    &.c-card-full {
+        margin: toRem(0px) toRem(30px);
+
+        @include resDown(xl) {
+            margin: toRem(0px) toRem(15px);
+        }
+
+        @include resDown(md) {
+            margin: toRem(0px) toRem(10px);
+        }
+
+        background-color: $default-background;
+
+        .image {
+            img {
+                width: 100%;
+                object-fit: cover;
+                object-position: top;
+            }
+        }
+
+        .context {
+            display: flex;
+            flex-direction: column;
+            text-align: start;
+            align-items: start;
+            padding: toRem(48px) toRem(32px);
+            gap: toRem(32px);
+
+            @include resDown(xl) {
+                padding: toRem(24px) toRem(16px);
+                gap: toRem(16px);
+            }
+
+            @include resDown(md) {
+                padding: toRem(12px) toRem(8px);
+                gap: toRem(8px);
+            }
+        }
+    }
+
+    &.c-card-image {
+        background-color: $color-Primary-50;
+        padding: toRem(60px) toRem(32px);
+
+        @include resDown(xl) {
+            padding: toRem(30px) toRem(16px);
+        }
+
+        @include resDown(md) {
+            padding: toRem(15px) toRem(8px);
+        }
+
+        img {
+            width: 100%;
+            max-width: toRem(100px);
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            object-position: center;
+        }
+    }
+
+    &.c-card-statistics {
+        border-radius: toRem(20px);
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        background-color: $default-background;
+        height: 100%;
+
+        @include boxShadow(bottom, 0, 30px, 0, #000000, 0.08);
+        gap: toRem(24px);
+        margin: toRem(12px);
+        margin-bottom: 0;
+        padding: toRem(60px) toRem(32px);
+
+        @include resDown(xl) {
+            gap: toRem(12px);
+            margin: toRem(12px);
+            margin-bottom: 0;
+            padding: toRem(30px) toRem(16px);
+        }
+
+        @include resDown(md) {
+            gap: toRem(6px);
+            margin: toRem(6px);
+            margin-bottom: 0;
+            padding: toRem(15px) toRem(8px);
+        }
+
+
+        &.c-card-statistics-icon {
+            width: unset;
+            margin: 0;
+            padding: toRem(40px) toRem(32px);
+
+            @include resDown(xl) {
+                margin: toRem(12px);
+                padding: toRem(20px) toRem(16px);
+            }
+
+            @include resDown(md) {
+                margin: toRem(6px);
+                padding: toRem(20px) toRem(16px);
+            }
+        }
+    }
+
+    &.c-card-icon {
+        display: flex;
+        flex-direction: column;
+        background-color: $default-background;
+        gap: toRem(16px);
+        padding: toRem(40px) toRem(32px);
+        text-align: start;
+        height: 100%;
+
+        @include resDown(xl) {
+            gap: toRem(6px);
+            padding: toRem(20px) toRem(16px);
+        }
+
+        @include resDown(md) {
+            gap: toRem(3px);
+            padding: toRem(10px) toRem(8px);
+        }
+
+        .icon {
+            width: toRem(45px);
+            height: toRem(45px);
+            min-height: toRem(45px);
+            border-radius: toRem(7px);
+            text-align: center;
+            align-content: center;
+            background-color: $color-Primary-100;
+
+            svg {
+                height: toRem(20px);
+                color: $color-Primary-500;
+            }
+        }
+
+        p {
+            height: 100%;
+        }
+
+        &.c-card-icon-dark {
+            color: $color-Primary-50;
+            background-color: $color-Primary-500;
+
+            .icon {
+                background-color: $color-Primary-50;
+
+                svg {
+                    color: $color-Primary-500;
+                }
+            }
+
+            a {
+                color: $color-Primary-50;
+            }
+        }
+    }
+
+    &.c-card-icon-title {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        background-color: $default-background;
+        gap: toRem(32px);
+        padding: toRem(60px) toRem(32px);
+        @include boxShadow(bottom, 4px, 30px, 0, #000000, 0.10);
+        height: 100%;
+
+        @include resDown(xl) {
+            gap: toRem(16px);
+            padding: toRem(30px) toRem(16px);
+        }
+
+        @include resDown(md) {
+            gap: toRem(8px);
+            padding: toRem(15px) toRem(8px);
+        }
+
+        svg {
+            width: toRem(38px);
+            height: toRem(38px);
+            color: $color-Primary-500;
+        }
+    }
+
+    &.c-card-system {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        background-color: $default-background;
+        gap: toRem(24px);
+        padding: toRem(40px) toRem(32px);
+        height: 100%;
+        @include boxShadow(bottom, 4px, 30px, 0, #000000, 0.10);
+
+        @include resDown(xl) {
+            gap: toRem(12px);
+            padding: toRem(20px) toRem(16px);
+        }
+
+        @include resDown(md) {
+            gap: toRem(6px);
+            padding: toRem(10px) toRem(8px);
+        }
+
+        .image {
+            text-align: center;
+
+            img {
+                max-width: 100%;
+                height: toRem(80px);
+            }
+        }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+            gap: toRem(8px);
+
+            @include resDown(xl) {
+                gap: toRem(6px);
+            }
+
+            @include resDown(md) {
+                gap: toRem(4px);
+            }
+        }
+
+        .c-badge {
+            position: absolute;
+            top: toRem(32px);
+
+            @include resDown(xl) {
+                top: toRem(16px);
+            }
+
+            @include resDown(md) {
+                top: toRem(8px);
+            }
+
+            @include langStyles(ar) {
+                left: toRem(32px);
+
+                @include resDown(xl) {
+                    left: toRem(16px);
+                }
+
+                @include resDown(md) {
+                    left: toRem(8px);
+                }
+            }
+
+            @include langStyles(en) {
+                right: toRem(32px);
+
+                @include resDown(xl) {
+                    right: toRem(16px);
+                }
+
+                @include resDown(md) {
+                    right: toRem(8px);
+                }
+            }
+        }
+    }
+
+    a {
+        @include text-style($body-large, $line-height-large, var(--font-bold));
+
+        svg {
+            width: toRem(14px);
+            height: toRem(14px);
+        }
+    }
+}
+
+.card-container {
+  height: 100%;
+  &.p-24 {
+    padding: toRem(24px);
+
+    @include resDown(xl) {
+      padding: toRem(12px);
+    }
+
+    @include resDown(md) {
+      padding: toRem(6px);
+    }
+  }
+  &.p-12{
+    padding: toRem(12px);
+
+    @include resDown(xl) {
+      padding: toRem(6px);
+    }
+
+    @include resDown(md) {
+      padding: toRem(3px);
+    }
+  }
+}

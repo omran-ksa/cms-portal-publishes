@@ -1,0 +1,28 @@
+// -----------------------------------------------------------------------------
+// This file contains all @font-face declarations, if any.
+// -----------------------------------------------------------------------------
+
+// Arabic Cairo
+@font-face {
+    font-family: "Cairo Bold";
+    src: font("ar/Cairo-Bold.ttf");
+}
+@font-face {
+    font-family: "Cairo Regular";
+    src: font("ar/Cairo-Medium.ttf");
+}
+
+// english
+@font-face {
+    font-family: "Inter Bold";
+    src: font("en/Inter_28pt-Bold.ttf");
+}
+@font-face {
+    font-family: "Inter Regular";
+    src: font("en/Inter_18pt-Regular.ttf");
+}
+
+
+body {
+    font-family: "Cairo", "Inter", Arial, sans-serif;
+}

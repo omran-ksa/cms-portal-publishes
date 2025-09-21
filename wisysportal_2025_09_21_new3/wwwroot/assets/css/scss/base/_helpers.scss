@@ -1,0 +1,114 @@
+// -----------------------------------------------------------------------------
+// This file contains CSS helper classes.
+// -----------------------------------------------------------------------------
+
+/**
+ * Clear inner floats
+ */
+.clearfix::after {
+  clear: both;
+  content: '';
+  display: table;
+}
+
+/**
+ * Main content containers
+ * 1. Make the container full-width with a maximum width
+ * 2. Center it in the viewport
+ * 3. Leave some space on the edges, especially valuable on small screens
+ */
+.container {
+  max-width: 100% !important;
+  padding-right: toRem(80px);
+  padding-left: toRem(80px);
+
+  @include resDown(md){
+    padding-right: toRem(16px);
+    padding-left: toRem(16px);
+  }
+}
+
+/**
+ * Hide text while making it readable for screen readers
+ */
+.limit-text-line {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+
+  &.two-line {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  &.three-line {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  &.four-line {
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+
+  @include resDown(md) {
+    &.two-md-line {
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+    }
+
+    &.four-md-line {
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+    }
+  }
+}
+
+// Hide on Mobile
+.hide-mobile {
+  display: none; // Hidden on mobile
+  
+  @include resUp(lg){
+    display: initial; // Reverts to the default value (block, inline, etc.)
+  }
+}
+
+// Hide on Web/Desktop
+.hide-web {
+  display: initial; // Default behavior on mobile
+  
+  @include resUp(lg){
+    display: none; // Hidden on desktop
+  }
+}
+
+
+$image-aspect-ratios: ( 
+    "square": 1 / 1, 
+    "landscape": 16 / 9, 
+    "portrait": 9 / 16, 
+    "cinematic": 21 / 9 
+);
+
+.image-container {
+    width: 100%;
+    overflow: hidden;
+
+    @each $name, $ratio in $image-aspect-ratios {
+        &.#{$name} {
+            img {
+                object-position: top !important;
+                aspect-ratio: $ratio;
+            }
+
+            &.contain {
+                img {
+                    object-position: center !important;
+                    object-fit: contain;
+                }
+            }
+        }
+    }
+}

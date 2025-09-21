@@ -1,0 +1,52 @@
+{
+  "$schema": "appsettings-schema.json",
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Information",
+        "System": "Warning"
+      }
+    }
+  },
+  "Umbraco": {
+    "CMS": {
+      "Global": {
+        "Id": "7943807e-735f-48d2-8418-0a3327038c70",
+        "SanitizeTinyMce": true
+      },
+      "Content": {
+        "AllowEditInvariantFromNonDefault": true,
+        "ContentVersionCleanupPolicy": {
+          "EnableCleanup": true
+        }
+      },
+      "Unattended": {
+        "UpgradeUnattended": true
+      },
+      "Security": {
+        "AllowConcurrentLogins": false
+      }
+    }
+  },
+  "AzureAd": {
+    "TenantId": "158524ac-6c35-4e90-8485-a90b5b83ac94",
+    "ClientId": "4b9b4f92-6e84-4a5e-9884-37005e8033f3",
+    "ClientSecret": "bCi8Q~D9ZDQVCPCqeGI7dBXN4-KcZeXv-llV8brb",
+    "CallbackPath": "/signin-oidc",
+    "SignedOutCallbackPath": "/signout-callback-oidc"
+  },
+  "AssetVersion": "2.1",
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Umbraco": "Debug",
+      "Microsoft": "Warning"
+    }
+  },
+  "AccuWeather": {
+    "ApiKey": "zpka_c0879375e9194032ad451726a21dea88_f9e6aba8"
+  }
+
+}

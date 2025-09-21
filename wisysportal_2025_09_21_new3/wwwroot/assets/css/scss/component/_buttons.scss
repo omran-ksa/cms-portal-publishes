@@ -1,0 +1,74 @@
+button.c-btn,
+a.c-btn {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+
+    gap: toRem(10px);
+    padding: toRem(16px);
+    border-radius: toRem(7px);
+
+    color: $color-Primary-900;
+    border: unset;
+    background-color: unset;
+
+    transition: .3s;
+
+    @include text-style($body-medium, $line-height-medium, var(--font-bold));
+
+    svg {
+        padding-top: toRem(2px);
+    }
+
+    &.c-btn-white {
+        color: $color-Primary-500;
+        border: toRem(1px) solid $default-background;
+        background-color: $default-background;
+
+        &.c-btn-hover {
+            @include on-event() {
+                color: $color-Primary-600;
+                border: toRem(1px) solid $color-Primary-50;
+                background-color: $color-Primary-50;
+            }
+        }
+    }
+
+    &.c-btn-primary {
+        color: $color-Primary-50;
+        border: toRem(1px) solid $color-Primary-500;
+        background-color: $color-Primary-500;
+
+        &.c-btn-hover {
+            @include on-event() {
+                background-color: $color-Primary-700;
+            }
+        }
+    }
+
+    &.c-btn-out-line {
+        color: $color-Primary-500;
+        border: toRem(1px) solid $color-Primary-500;
+
+        &.c-btn-hover {
+            @include on-event() {
+                color: $color-Primary-700;
+                background-color: $color-Primary-100;
+            }
+        }
+    }
+
+    &.c-btn-out-line-white {
+        color: $color-Primary-50;
+        border: toRem(1px) solid $color-Primary-50;
+
+        &.c-btn-hover {
+            @include on-event() {
+                color: $color-Primary-900;
+                background-color: $color-Primary-50;
+                border: toRem(1px) solid transparent;
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+// Usage: <div class="horizontal-line"></div>
+.horizontal-line {
+    min-width: 100%; // Full width of the container
+    border-top: toRem(1px) solid $color-Primary-900;
+    margin: toRem(10px) 0; // Space above and below the line    
+
+    &.hide-mobile {
+        @include resDown(md) {
+            border-top-width: 0;
+        }
+    }
+}

@@ -1,0 +1,62 @@
+﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    var routeCulture = ViewContext?.RouteData?.Values?["culture"]?.ToString();
+    if (string.IsNullOrWhiteSpace(routeCulture))
+    {
+        var firstSeg = (Context.Request.Path.Value ?? "/")
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        if (firstSeg is "ar" or "en") routeCulture = firstSeg;
+    }
+    var currentLang = !string.IsNullOrWhiteSpace(routeCulture)
+        ? (routeCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en")
+        : "ar";
+    var isAr = currentLang == "ar";
+}
+<section class="kc-weather d-inline-flex align-items-center gap-2 px-3 py-2"
+         data-city=""
+         data-is-ar="@isAr.ToString().ToLower()">
+    <i class="fa-solid fa-cloud-sun" aria-hidden="true"></i>
+    <span class="kc-weather__place">Riyadh - KSA</span>
+    <strong class="kc-weather__temp ms-2">36</strong>
+</section>
+
+
+<style>
+    /* Weather pill style (mobile & desktop friendly) */
+     .kc-weather {
+        background: #e6d8f4;
+        border-radius: 12px;
+        font-size: .95rem;
+        color: #4b2a86;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+      .kc-weather i {
+            font-size: 1.1rem
+        }
+
+  .kc-weather__temp::after {
+        content: "°C";
+        margin-inline-start: 2px
+    }
+    /* Compact on very small screens */
+    @@media (max-width:480px) {
+     .kc-weather
+
+    {
+        font-size: .88rem;
+        padding: .35rem .6rem
+    }
+
+   .kc-weather i {
+        font-size: 1rem
+    }
+
+    }
+</style>
+
+<!-- Ensure this is included once (best in your _Layout footer) -->
+<script src="~/assets/js/weather-widget.js" defer></script>

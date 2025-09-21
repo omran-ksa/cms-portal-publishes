@@ -1,0 +1,33 @@
+// -----------------------------------------------------------------------------
+// This file contains all styles related to the Scrollbars of the site/application.
+// -----------------------------------------------------------------------------
+
+/* Width */
+::-webkit-scrollbar {
+  width: toRem(10px);
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: $color-Neutral-500;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  width: toRem(10px);
+  background: rgba($color-Neutral-700, 0.5); /* 50% transparent */
+  border-radius: toRem(50px);
+  transition: .5s;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: $color-Neutral-900;
+  transition: .5s;
+}
+
+/* Handle on mouse down */
+::-webkit-scrollbar-thumb:active {
+  background: $color-Neutral-900;
+  transition: .5s;
+}

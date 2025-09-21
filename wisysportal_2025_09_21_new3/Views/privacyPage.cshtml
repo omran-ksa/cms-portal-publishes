@@ -1,0 +1,112 @@
+﻿@using Umbraco.Cms.Web.Common.PublishedModels;
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+	Layout = "layout.cshtml";
+}
+@using System.Globalization
+@{
+    var culture = new CultureInfo("ar");
+    var now = DateTimeOffset.Now.ToOffset(TimeSpan.FromHours(3));
+    var temp = 26;
+}
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>سياسة الخصوصية</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+<style>
+:root{--primary:#6b4bbf;--primary2:#7a57d6;--bg:#f1f3f6;--surface:#fff;--muted:#6c7382;--r-lg:1.75rem}
+body{font-family:"Tajawal",system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:var(--bg);color:#1e2330}
+.topbar{background:#fff;border-bottom:1px solid rgba(0,0,0,.06);font-size:.92rem}
+.badge-soft{background:rgba(123,97,255,.12);color:#5b4bf0;border:1px solid rgba(123,97,255,.25)}
+.page-hero{background:linear-gradient(180deg,var(--primary) 0,var(--primary2) 100%);color:#fff;padding:1.25rem 0 3rem}
+.page-hero a{color:#efeaff;text-decoration:none}
+.surface{background:var(--surface);border-radius:var(--r-lg);box-shadow:0 .6rem 2rem rgba(16,22,34,.08);margin-top:-2rem;padding:2rem;border:1px solid rgba(0,0,0,.04)}
+.h-rule{height:6px;width:74px;background:#6b4bbf;border-radius:12px;margin-top:.25rem}
+.footer{color:#7b8a9b}.social a{width:36px;height:36px;border-radius:999px;border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;color:#5e6b7b}
+ul li{margin-bottom:.35rem}
+</style>
+</head>
+<body>
+
+
+<header class="page-hero">
+  <div class="container">
+    <nav class="fw-medium">
+      <a href="/"><i class="bi bi-house-door ms-1"></i>الرئيسية</a>
+      <span class="mx-2 opacity-75">‹</span>
+      <span class="fw-semibold">سياسة الخصوصية</span>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <div class="surface">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h1 class="h3 fw-bolder mb-0">سياسة الخصوصية</h1>
+      <div class="h-rule"></div>
+    </div>
+
+    <p>نلتزم بحماية بياناتك الشخصية ونعالجها وفق أعلى المعايير. باستخدامك لخدماتنا فأنت توافق على هذه السياسة.</p>
+
+    <h5 class="fw-bold mt-4">1. المعلومات التي نجمعها</h5>
+    <ul>
+      <li>بيانات تعريفية: الاسم، البريد الإلكتروني، رقم الجوال، الوظيفي.</li>
+      <li>بيانات تقنية: نوع الجهاز، المتصفح، عنوان IP، ملفات السجل.</li>
+      <li>بيانات استخدام: الصفحات التي تزورها، مواعيد الزيارات، مسارات الدخول والخروج.</li>
+    </ul>
+
+    <h5 class="fw-bold mt-4">2. كيف نستخدم بياناتك</h5>
+    <ul>
+      <li>تقديم الخدمات وتحسين التجربة.</li>
+      <li>الرد على الاستفسارات وتقديم الدعم.</li>
+      <li>إرسال تنبيهات أو اتصالات متعلقة بالخدمة (يمكنك إلغاء الاشتراك).</li>
+      <li>الوفاء بالالتزامات النظامية وحماية حقوقنا وحقوق المستخدمين.</li>
+    </ul>
+
+    <h5 class="fw-bold mt-4">3. كيف نحمي بياناتك</h5>
+    <ul>
+      <li>استخدام تشفير ومعايير أمنية مناسبة.</li>
+      <li>سياسة صلاحيات وصول وفق مبدأ أقل امتياز.</li>
+      <li>مراجعات دورية لسجلات الوصول والحوادث.</li>
+    </ul>
+
+    <h5 class="fw-bold mt-4">4. مشاركة البيانات</h5>
+    <ul>
+      <li>قد نشارك مع مزودي خدمات وفق عقود حماية ومعالجة.</li>
+      <li>عند متطلبات نظامية أو أوامر قضائية.</li>
+      <li>في حالة الاندماج/الاستحواذ مع إشعار مسبق.</li>
+    </ul>
+
+    <h5 class="fw-bold mt-4">5. حقوقك</h5>
+    <ul>
+      <li>طلب الوصول أو التصحيح أو الحذف حيثما كان ذلك ممكناً.</li>
+      <li>الاعتراض على بعض المعالجات أو سحب الموافقة.</li>
+      <li>التواصل معنا عبر صفحة “تواصل معنا”.</li>
+    </ul>
+  </div>
+</main>
+
+<footer class="footer py-5">
+  <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <img style="width:48px;height:48px" class="rounded" src="https://avatars.githubusercontent.com/u/9919?s=200&v=4" alt="">
+      <div><div class="fw-bold">الشركة الوطنية لنظم المعلومات</div><div class="small">© 2025 جميع الحقوق محفوظة</div></div>
+    </div>
+    <ul class="nav gap-3">
+      <li class="nav-item"><a class="nav-link px-0" href="/legal/cookies">سياسة ملفات الارتباط</a></li>
+      <li class="nav-item"><a class="nav-link px-0" href="/legal/terms">شروط الاستخدام</a></li>
+      <li class="nav-item"><a class="nav-link px-0" href="/legal/privacy">سياسة الخصوصية</a></li>
+    </ul>
+    <div class="social d-flex gap-2">
+      <a href="#"><i class="bi bi-linkedin"></i></a>
+      <a href="#"><i class="bi bi-twitter-x"></i></a>
+      <a href="#"><i class="bi bi-youtube"></i></a>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

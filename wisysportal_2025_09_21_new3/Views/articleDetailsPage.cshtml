@@ -1,0 +1,222 @@
+﻿@using System.Globalization
+@using Umbraco.Cms.Core.Models
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Cms.Core.Strings
+@using Umbraco.Extensions
+@using Umbraco.Models
+@using Wisys.CMS.UI.Breadcrumbs
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ArticlesPageModel>
+
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback;
+@inject IShortStringHelper ShortStringHelper
+
+@{
+    Layout = "layout.cshtml";
+
+    // -------------------- Inputs from controller --------------------
+    var articleSlug = ViewData["ArticleSlug"]?.ToString();
+    var articleId = ViewData["ArticleId"]?.ToString();
+
+    // -------------------- Collect & pick selected news item --------------------
+    var blocks = Model.Cards ?? BlockListModel.Empty;
+    var allCards = blocks.Select(b => new CardModel(b.Content, PublishedValueFallback)).ToList();
+    CardModel? selectedItem = null;
+
+    // choose item (id -> hash -> slug)
+    if (!string.IsNullOrWhiteSpace(articleId) && Guid.TryParse(articleId, out var gid))
+        selectedItem = allCards.FirstOrDefault(c => c.Key == gid);
+    if (selectedItem is null && int.TryParse(articleId, out var hid))
+        selectedItem = allCards.FirstOrDefault(c => c.Key.GetHashCode() == hid);
+    if (selectedItem is null && !string.IsNullOrWhiteSpace(articleSlug))
+        selectedItem = allCards.FirstOrDefault(c => c.Title?.ToUrlSegment(ShortStringHelper, CultureInfo.CurrentUICulture.Name) == articleSlug);
+    selectedItem ??= allCards.FirstOrDefault();
+
+    if (selectedItem is null)
+    {
+        <div class="container my-5"><div class="alert alert-warning">No Articles found</div></div>
+        
+        return;
+    }
+
+    // -------------------- Language, culture & direction --------------------
+    // Prefer ViewData (current request). Fall back to TempData without consuming it.
+      var routeCulture = ViewContext?.RouteData?.Values?["culture"]?.ToString();
+
+    if (string.IsNullOrWhiteSpace(routeCulture))
+    {
+        var firstSeg = (Context.Request.Path.Value ?? "/")
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        if (firstSeg is "ar" or "en") routeCulture = firstSeg;
+    }
+
+    var currentLang = !string.IsNullOrWhiteSpace(routeCulture)
+        ? (routeCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en")
+        : "ar";
+
+     ViewData["CurrentLang"] = currentLang;
+
+    var isAr = currentLang == "ar";
+    var dir = isAr ? "rtl" : "ltr";
+
+
+    TempData.Keep("CurrentLang");
+
+
+
+    // UI culture for dates in the "More news" section (kept as you had it)
+    var ui = (currentLang?.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ?? false)
+             ? new CultureInfo("ar")
+             : new CultureInfo("en");
+    // -------------------- Strings --------------------
+
+
+    ViewData["BreadcrumbReplaceLast"] = new BreadcrumbItem
+    {
+        Title = selectedItem?.Title ?? (isAr ? "تفاصيل الخبر" : "News Details"),
+        Url = null,
+        Active = true
+    };
+    // -------------------- Strings --------------------
+    string NewsIndexTitle = isAr ? "الأخبار" : "News";
+    string HomeTitle = isAr ? "الرئيسية" : "Home";
+    var moreTitle = isAr ? "المزيد من الأخبار" : "More news";
+
+    // -------------------- Background (same logic/feel as slider) --------------------
+    var bgColor = Model.Value<string>("backgroundColor");
+    var bgImage = Model.Value<MediaWithCrops>("backgroundImage");
+    var bgStyle = "background: linear-gradient(19deg, #6b46c1 0%, #9333ea 50%, #c026d3 100%);";
+    if (!string.IsNullOrWhiteSpace(bgColor) && (bgColor.StartsWith("#") || bgColor.StartsWith("rgb")))
+        bgStyle = $"background: {bgColor};";
+    if (bgImage != null)
+        bgStyle = $"background:linear-gradient(19deg, rgba(192, 38, 211, 0.8) 100%),  rgba(147, 51, 234, 0.8) 50%, rgba(107, 70, 193, 0.8) 0%, url('{bgImage.GetCropUrl()}'); background-size: cover; background-position: center;";
+
+    // -------------------- More news (newest 3 excluding current) --------------------
+    var moreCards = blocks
+        .Select(b => new CardModel(b.Content, PublishedValueFallback))
+        .Where(c => selectedItem == null || c.Key != selectedItem.Key)
+        .OrderByDescending(c => c.Date)
+        .ToList();
+
+    string GetNewsDetailUrl(CardModel newsItem)
+    {
+        var slug = newsItem.Title?.ToUrlSegment(ShortStringHelper, ui.Name) ?? "news-item";
+        var id = newsItem.Key.ToString();
+        return $"/{ui.Name}/articles/details/{slug}/{id}";
+    }
+
+    string GetArticleDetailUrl(CardModel a)
+    {
+        var slug = a.Title?.ToUrlSegment(ShortStringHelper, ui.Name) ?? "article";
+        var id = a.Key.ToString();
+        // hits your controller: [HttpGet("{culture}/articles/details/{slug}/{id}")]
+        return $"/{currentLang}/articles/details/{slug}/{id}";
+    }
+}
+
+
+
+<main class="position-relative container justify-content-center text-start" dir="@dir">
+    <!-- raised white article card overlapping header -->
+    <div class=" mb-2">
+        <div class="w-100">
+            <article class="bg-white px-3 px-md-4 px-lg-5 position-relative mt-n4 mt-md-n5 z-1 pb-4">
+
+                <header class="mb-3 mb-md-4">
+                    <h4 class="fw-bold  mt-2 mb-0 text-start ">
+                        @selectedItem.Title
+                    </h4>
+                    <div class="d-flex justify-content-start">
+                        @if (selectedItem.Date != default)
+                        {
+                            <small class="text-muted d-inline-flex align-items-center gap-2 mt-1">
+                                <i class="bi bi-calendar3"></i>
+                                <time>@selectedItem.Date.ToString("dd MMMM yyyy", ui)</time>
+                            </small>
+                        }
+                    </div>
+                </header>
+
+                <div class="fs-5 lh-lg text-dark-emphasis text-start" dir="@dir">
+                    @if (!string.IsNullOrEmpty(selectedItem.Description))
+                    {
+                        @Html.Raw(selectedItem.Description)
+                    }
+                    <br />
+
+                    @if (selectedItem.MoreInfo != null)
+                    {
+                        @Html.Raw(selectedItem.MoreInfo)
+                    }
+                </div>
+
+            </article>
+        </div>
+    </div>
+</main>
+
+
+<section class="mb-3 c-articles" dir="@dir">
+    <div class="container">
+
+        <!-- Header -->
+        <div class="row align-items-center justify-content-between g-2 mb-4 mt-2">
+            <div class="col">
+                <h2 class="h4 fw-bold mb-0">@(isAr ? "المزيد من المقالات" : "More Articles")</h2>
+            </div>
+
+            <div class="col-auto">
+                <a href="@Model.Url()" class="btn btn-primary rounded-pill d-inline-flex align-items-center gap-2">
+                    @(isAr ? "عرض المزيد" : "View more")
+
+                    <i class="bi @(isAr ? "bi-arrow-left" : "bi-arrow-right")"></i>
+                </a>
+            </div>
+        </div>
+
+        @if (!allCards.Any())
+        {
+            <div class="alert alert-info text-center">
+                @(isAr ? "لا توجد مقالات حالياً" : "No articles available right now.")
+            </div>
+        }
+        else
+        {
+            <div class="row g-4 ">
+                @foreach (var a in allCards
+                            .Where(c => selectedItem == null || c.Key != selectedItem.Key) // exclude selected
+                            .OrderByDescending(c => c.Date) // newest first
+                            .Take(3))
+                {
+                    <div class="col-12 col-md-6 col-lg-4 d-flex">
+                        <article class="card shadow-sm h-100 border-0 position-relative w-100 c-articles__card">
+                            <div class="position-relative">
+                                <div class="ratio ratio-16x9">
+                                    <img class="c-articles__img" src="@a.Image?.Url()" alt="@a.Title" />
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                                <h3 class="h6 fw-bold mb-2 text-truncate c-articles__title">
+                                    @a.Title
+                                </h3>
+                                @if (!string.IsNullOrWhiteSpace(a.Description))
+                                {
+                                    <p class="text-secondary mb-0 c-articles__excerpt">
+                                        @a.Description
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- open details (stretched) -->
+                            <a class="stretched-link" href="@GetArticleDetailUrl(a)" hreflang="@currentLang"
+                               aria-label="@((isAr ? "فتح المقال" : "Open article")): @a.Title"></a>
+                        </article>
+                    </div>
+                }
+            </div>
+
+        }
+    </div>
+</section>

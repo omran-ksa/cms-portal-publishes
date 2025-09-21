@@ -1,0 +1,126 @@
+.fly {
+  position: absolute;
+  top: 0;
+  height: var(--main-height, 90vh);
+  left: 0;
+  right: 0;
+  z-index: -1;
+
+  .flyer {
+    position: absolute;
+    border-radius: toRem(500px);
+    align-content: center;
+    text-align: center;
+
+    svg {
+      height: toRem(30px);
+
+      @include resDown(xl) {
+        height: toRem(25px);
+      }
+
+      @include resDown(md) {
+        height: toRem(20px);
+      }
+    }
+
+    &.flyer-1 {
+      top: toRem(30px);
+      @include langStyles(ar) { left: toRem(30px); }
+      @include langStyles(en) { right: toRem(30px); }
+
+      height: toRem(80px);
+      width: toRem(80px);
+      background-color: $color-Orange-50;
+
+      @include resDown(xl) {
+        height: toRem(70px);
+        width: toRem(70px);
+      }
+
+      @include resDown(md) {
+        height: toRem(60px);
+        width: toRem(60px);
+      }
+
+      svg {
+        color: $color-Orange-500;
+      }
+    }
+
+    &.flyer-2 {
+      bottom: toRem(30px);
+      @include langStyles(ar) { left: toRem(30px); }
+      @include langStyles(en) { right: toRem(30px); }
+      
+      height: toRem(120px);
+      width: toRem(120px);
+      background-color: $color-Light-Green-50;
+
+      @include resDown(xl) {
+        height: toRem(105px);
+        width: toRem(105px);
+      }
+
+      @include resDown(md) {
+        height: toRem(90px);
+        width: toRem(90px);
+      }
+
+      svg {
+        color: $color-Light-Green-500;
+      }
+    }
+
+    &.flyer-3 {
+      top: toRem(30px);
+      @include langStyles(ar) { right: 30%; }
+      @include langStyles(en) { left: 30%; }
+      
+      height: toRem(140px);
+      width: toRem(140px);
+      background-color: $color-Primary-50;
+
+      @include resDown(xl) {
+        @include langStyles(ar) { right: toRem(30px); }
+        @include langStyles(en) { left: toRem(30px); }
+        height: toRem(116.5px);
+        width: toRem(116.5px);
+      }
+
+      @include resDown(md) {
+        height: toRem(105px);
+        width: toRem(105px);
+      }
+
+      svg {
+        color: $color-Primary-500;
+      }
+    }
+
+    &.flyer-4 {
+      bottom: toRem(30px);
+      @include langStyles(ar) { right: 32%; }
+      @include langStyles(en) { left: 32%; }
+      height: toRem(100px);
+      width: toRem(100px);
+      background-color: $color-Secondary-50;
+
+      @include resDown(xl) {
+        @include langStyles(ar) { right: toRem(30px); }
+        @include langStyles(en) { left: toRem(30px); }
+        height: toRem(87.5px);
+        width: toRem(87.5px);
+      }
+
+      @include resDown(md) {
+        height: toRem(75px);
+        width: toRem(75px);
+      }
+
+      svg {
+        color: $color-Secondary-500;
+      }
+    }
+  }
+}

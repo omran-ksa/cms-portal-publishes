@@ -1,0 +1,46 @@
+section.ads {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: toRem(100px);
+
+        @include resDown(md) {
+            width: toRem(80px);
+        }
+        &.icon-xl{
+            width: toRem(200px);
+    
+            @include resDown(md) {
+                width: toRem(160px);
+            }
+        }
+        &.img-xl{
+            width: toRem(200px);
+    
+            @include resDown(md) {
+                width: toRem(160px);
+            }
+        }
+    }
+
+    p {
+        width: 60%;
+
+        @include resDown(md) {
+            width: 100%;
+        }
+    }
+
+    button {
+        width: fit-content;
+    }
+
+    &.ads-primary{
+        color: $color-Primary-50;
+        background-color: $color-Primary-500;
+    }
+}

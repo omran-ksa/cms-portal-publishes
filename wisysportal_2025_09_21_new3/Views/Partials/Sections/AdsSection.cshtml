@@ -1,0 +1,270 @@
+﻿@* @using System.Globalization
+@using Umbraco.Cms.Core.Models
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Cms.Core.Strings
+@using Umbraco.Extensions
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<IPublishedElement>
+
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback;
+@inject IShortStringHelper ShortStringHelper
+
+@{
+    // ===== Language / RTL =====
+    var currentLang = (ViewData["CurrentLang"] as string)
+                      ?? (TempData.Peek("CurrentLang") as string)
+                      ?? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var ui = currentLang?.StartsWith("ar", StringComparison.OrdinalIgnoreCase) == true
+             ? new CultureInfo("ar")
+             : new CultureInfo("en");
+    var isAr = ui.TwoLetterISOLanguageName == "ar";
+
+    // ===== Data contract =====
+    // Provide a Block List named "slides" where each item has:
+    //   title (TextString), description (TextArea/RTE), image (MediaPicker)
+    var slides = Model.Value<BlockListModel>("slides") ?? BlockListModel.Empty;
+
+    // Fallback: if your property alias differs, try "cards"
+    if (slides.Count == 0)
+        slides = Model.Value<BlockListModel>("cards") ?? BlockListModel.Empty;
+
+    // Build a light list for rendering
+    var items = slides.Select(b => new
+    {
+        Title = b.Content.Value<string>("title"),
+        Description = b.Content.Value<string>("description"),
+        Image = b.Content.Value<MediaWithCrops>("image")
+    }).ToList();
+
+    // Unique ids
+    var sid = $"heroInfo-{Guid.NewGuid():N}";
+    var prevId = $"{sid}-prev";
+    var nextId = $"{sid}-next";
+    var pagId = $"{sid}-pag";
+}
+
+<div class="portal-hero-info w-100" dir="@(isAr ? "rtl" : "ltr")">
+    <div id="@sid" class="swiper portal-hero-info__swiper">
+        <div class="swiper-wrapper">
+            @foreach (var s in items)
+            {
+                <div class="swiper-slide">
+                    <div class="portal-hero-info__slide d-flex align-items-stretch">
+                        <!-- Text column -->
+                        <div class="portal-hero-info__text flex-grow-1 d-flex flex-column">
+                            <!-- controls (dots + tiny arrows) -->
+                            <div class="portal-hero-info__controls d-flex align-items-center gap-3 mb-3">
+                                <div id="@pagId" class="swiper-pagination position-relative m-0"></div>
+
+                                <div class="d-inline-flex align-items-center gap-2 ms-auto">
+                                    <button id="@prevId" type="button"
+                                            class="ph-btn ph-btn--icon"
+                                            aria-label="Prev">
+                                        <i class="fa-solid @(isAr ? "fa-arrow-right" : "fa-arrow-left")"></i>
+                                    </button>
+                                    <button id="@nextId" type="button"
+                                            class="ph-btn ph-btn--icon"
+                                            aria-label="Next">
+                                        <i class="fa-solid @(isAr ? "fa-arrow-left" : "fa-arrow-right")"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <h3 class="portal-hero-info__title">@s.Title</h3>
+                            @if (!string.IsNullOrWhiteSpace(s.Description))
+                            {
+                                <p class="portal-hero-info__desc">@Html.Raw(s.Description)</p>
+                            }
+                        </div>
+
+                        <!-- Image column -->
+                        <div class="portal-hero-info__image-wrap">
+                            @if (s.Image != null)
+                            {
+                                <img class="portal-hero-info__image"
+                                     src="@s.Image.Url()"
+                                     alt="@s.Image.Name"
+                                     loading="lazy" />
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+      const id = '@sid';
+      function init() {
+        const root = document.getElementById(id);
+        if (!root || root._inited) return;
+        root._inited = true;
+
+        new Swiper(root, {
+          effect: 'fade',
+          fadeEffect: { crossFade: true },
+          speed: 600,
+          autoHeight: false,
+          watchOverflow: true,
+          // we control nav and pagination externally (unique per instance)
+          navigation: { nextEl: '#@nextId', prevEl: '#@prevId' },
+          pagination: { el: '#@pagId', clickable: true },
+          on: {
+            slideChangeTransitionStart(sw){
+              // add translate animation to content & image
+              const active = sw.slides[sw.activeIndex];
+              if (!active) return;
+              active.querySelectorAll('.ph-anim').forEach(el => el.classList.remove('in'));
+              requestAnimationFrame(()=> {
+                active.querySelectorAll('.ph-anim').forEach(el => el.classList.add('in'));
+              });
+            }
+          }
+        });
+      }
+      function whenReady(fn){ if(document.readyState!=='loading'){fn()} else document.addEventListener('DOMContentLoaded',fn) }
+      function waitSwiper(tries=0){
+        if (window.Swiper) whenReady(init);
+        else if (tries < 80) setTimeout(()=>waitSwiper(tries+1), 75);
+        else console.error('Swiper not found');
+      }
+      waitSwiper();
+    })();
+</script>
+
+<style>
+    /* ===== Scoped styles: portal-hero-info ===== */
+    .portal-hero-info {
+        --ph-gap: 28px;
+    }
+
+    .portal-hero-info__slide {
+        display: grid;
+        grid-template-columns: 1fr minmax(260px, 520px);
+        gap: var(--ph-gap);
+        align-items: center;
+    }
+
+    .portal-hero-info__text {
+        min-width: 0;
+    }
+
+    /* Controls row: dots + tiny arrows */
+    .portal-hero-info__controls .swiper-pagination {
+        position: static;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .portal-hero-info__controls .swiper-pagination-bullet {
+        width: 22px;
+        height: 8px;
+        border-radius: 6px;
+        background: #e5d8ff;
+        opacity: 1;
+        transition: width .25s ease, background .25s ease;
+    }
+
+    .portal-hero-info__controls .swiper-pagination-bullet-active {
+        width: 36px;
+        background: #7d5ab8;
+    }
+
+    .ph-btn {
+        border: 0;
+        outline: 0;
+        background: #f3ecff;
+        color: #6c4aa7;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform .15s ease, background .2s ease, color .2s ease;
+    }
+
+        .ph-btn:hover {
+            transform: translateY(-1px);
+            background: #6c4aa7;
+            color: #fff;
+        }
+
+        .ph-btn:active {
+            transform: translateY(0);
+        }
+
+    .portal-hero-info__title {
+        font-weight: 800;
+        font-size: clamp(1.125rem, 1.2rem + .4vw, 1.5rem);
+        margin: .25rem 0 .75rem 0;
+        color: #1f1f1f;
+    }
+
+    .portal-hero-info__desc {
+        color: #4c4c4c;
+        line-height: 1.9;
+        margin: 0;
+    }
+
+    /* Image side */
+    .portal-hero-info__image-wrap {
+        border-radius: 18px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 12px 32px rgba(0,0,0,.08);
+    }
+
+    .portal-hero-info__image {
+        display: block;
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        transform: scale(1.02);
+        transition: transform .6s ease;
+    }
+
+    .swiper-slide-active .portal-hero-info__image {
+        transform: scale(1);
+    }
+
+    /* subtle entrance for text on slide change */
+    .ph-anim {
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity .45s ease, transform .45s ease;
+    }
+
+        .ph-anim.in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    /* Responsive */
+    @media (max-width: 1199.98px) {
+        .portal-hero-info__slide
+
+    {
+        grid-template-columns: 1fr minmax(240px, 460px);
+    }
+
+    }
+    @media (max-width: 991.98px) {
+        .portal-hero-info__slide
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-hero-info__image-wrap {
+        order: -1;
+        margin-bottom: 14px;
+    }
+
+    }
+</style>
+
+
+*@

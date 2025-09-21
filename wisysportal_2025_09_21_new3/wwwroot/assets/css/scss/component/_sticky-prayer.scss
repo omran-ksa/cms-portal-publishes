@@ -1,0 +1,336 @@
+﻿$sticky-bg: #6f43a7;
+$sticky-width: 70px;
+$sticky-hight: 56px;
+$sticky-radius: 16px;
+$z-sticky: 10050;
+
+#sticky-prayer {
+    position: fixed;
+    z-index: $z-sticky;
+    top: 32%;
+    min-width: 20rem;
+    max-width: 74vw;
+    padding: 2rem;
+    color: #fff;
+    border-radius: 0 0 $sticky-radius;
+    min-height: 415px;
+    border: 1px solid $sticky-bg;
+    transition: transform .24s cubic-bezier(.2,.8,.2,1), opacity .24s cubic-bezier(.2,.8,.2,1), visibility 0s .24s;
+    display: block;
+
+    @media (max-width: 768px) {
+        min-width: 14rem;
+        max-width: 70vw;
+    }
+
+    @media (min-width: 769px) {
+        min-height: 438px;
+    }
+
+    .sticky-prayer__panel {
+        position: fixed;
+        top: 0;
+        height: 100vh;
+        width: min(380px, 92vw);
+        color: #fff;
+        box-shadow: 0 20px 60px rgba(0,0,0,.28);
+        overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        transition: transform 0s ease-in, opacity 0s ease-in, visibility .15s .15s ease-in;
+        top: 32%;
+
+        @media (max-width: 768px) {
+            width: min(360px, 72vw);
+        }
+    }
+
+    .sticky-prayer__fab,
+    .sticky-prayer__close {
+        width: $sticky-width;
+        height: $sticky-hight;
+        display: grid;
+        place-items: center;
+        color: #fff !important;
+        border: 1px solid $sticky-bg;
+        font-size: 28px;
+        transition: transform 0s ease-in, opacity 0s ease-in, visibility .15s .15s ease-in;
+        z-index: 4;
+        top: 0 !important;
+    }
+
+    .sticky-prayer__close {
+        display: none;
+    }
+
+    @media (max-width: 740px) {
+        top: 18%;
+    }
+
+    @media (max-width: 380px) {
+        .sticky-prayer__panel {
+            width: 80vw;
+        }
+    }
+}
+
+/* --- Arabic drawer --- */
+#sticky-prayer[dir="rtl"] {
+    left: -20rem;
+    right: auto;
+    transition: left .3s ease;
+
+    .sticky-prayer__fab {
+        position: absolute;
+        left: calc(100% - 1px);
+        top: 0;
+        border-radius: 0 $sticky-radius $sticky-radius 0;
+    }
+
+    .sticky-prayer__close {
+        position: absolute;
+        left: calc(117%);
+        top: -1px;
+        border-radius: 0 $sticky-radius $sticky-radius 0;
+        z-index: 5;
+    }
+
+    @media (max-width: 768px) {
+        .sticky-prayer__fab, .sticky-prayer__close {
+            left: calc(100% + 6rem);
+        }
+    }
+
+    .sticky-prayer__panel {
+        left: 0;
+        right: auto;
+        border-bottom-right-radius: $sticky-radius;
+        transform: translateX(-110%);
+    }
+
+    &.is-open {
+        left: 0;
+
+        .sticky-prayer__panel {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+            z-index: 4;
+        }
+
+        .sticky-prayer__backdrop {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity .24s linear;
+        }
+
+        .sticky-prayer__fab {
+            pointer-events: none;
+            border-radius: 0;
+        }
+
+        .sticky-prayer__close {
+            opacity: 1;
+            visibility: visible;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .sticky-prayer__fab, .sticky-prayer__close {
+                left: calc(100% + 3rem);
+                border-radius: 0 $sticky-radius $sticky-radius 0;
+            }
+
+            .sticky-prayer__panel {
+                top: 18%;
+            }
+        }
+    }
+}
+
+/* --- English drawer --- */
+#sticky-prayer[dir="ltr"] {
+    right: -20rem;
+    left: auto;
+    transition: right .3s ease;
+
+    .sticky-prayer__fab {
+        position: absolute;
+        right: calc(100% - 1px);
+        top: 0;
+        border-radius: $sticky-radius 0 0 $sticky-radius;
+        z-index: 4;
+    }
+
+    .sticky-prayer__close {
+        position: absolute;
+        right: calc(117%);
+        top: -1px;
+        z-index: 5;
+    }
+
+    .sticky-prayer__panel {
+        right: 0;
+        left: auto;
+        border-bottom-left-radius: $sticky-radius;
+        transform: translateX(110%);
+    }
+
+    @media (max-width: 768px) {
+        .sticky-prayer__fab, .sticky-prayer__close {
+            right: calc(100% + 6rem);
+        }
+
+        .sticky-prayer__panel {
+            top: 13%
+        }
+    }
+
+    &.is-open {
+        right: 0;
+
+        .sticky-prayer__panel {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+            z-index: 4;
+        }
+
+        .sticky-prayer__backdrop {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .sticky-prayer__fab {
+            pointer-events: none;
+            border-radius: 0;
+        }
+
+        .sticky-prayer__close {
+            opacity: 1;
+            visibility: visible;
+            display: inline-block;
+        }
+    }
+}
+
+/* Backdrop */
+#sticky-prayer .sticky-prayer__backdrop {
+    position: fixed;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .24s ease, visibility 0s .24s;
+    z-index: 2;
+}
+
+// Mobile rules
+$bp-mobile: 767.98px;
+$fab-size: 52px;
+$fab-gap: 11%;
+$fab-bg: #6c4aa7;
+$fab-fg: #fff;
+$fab-shadow: 0 6px 20px rgba(0, 0, 0, .25);
+
+#sticky-prayer {
+    .sticky-prayer__fab, .sticky-prayer__close {
+        display: none !important;
+    }
+
+    &[dir="rtl"] .sticky-prayer__panel {
+        border-top-right-radius: 1rem;
+    }
+
+    &[dir="ltr"] .sticky-prayer__panel {
+        border-top-left-radius: 1rem;
+    }
+}
+
+.sticky-prayer__fab-mobile {
+    position: fixed;
+    bottom: $fab-gap;
+    inset-inline-end: 2.4%;
+    z-index: 1050;
+    width: $fab-size;
+    height: $fab-size;
+    border-radius: 50%;
+    background: $fab-bg;
+    color: $fab-fg;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: $fab-shadow;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .2s ease;
+
+    &:active {
+        transform: translateY(1px);
+    }
+
+    @media (max-width: 768px) {
+        bottom: 5%;
+        display: inline-flex;
+    }
+}
+
+/* --- Desktop popover mode --- */
+@media (min-width: 992px) {
+    /* already have this block */
+    #sticky-prayer.as-popover {
+        position: fixed;
+        inset: auto;
+        width: 0;
+        height: 0;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    /* ✅ change absolute → fixed here */
+    #sticky-prayer.as-popover .sticky-prayer__panel {
+        position: fixed; /* was: absolute */
+        width: min(380px, 92vw);
+        max-height: min(70vh, 520px);
+        overflow: auto;
+        border-radius: 14px;
+        box-shadow: 0 18px 50px rgba(0,0,0,.24);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-6px);
+        transition: opacity .18s ease, transform .18s ease, visibility 0s .18s;
+    }
+
+    #sticky-prayer.as-popover.is-open .sticky-prayer__panel {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
+
+/* tablet header polish */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .c-header .navbar-brand img {
+        max-height: 64px;
+        max-width: 48vw;
+    }
+
+    .c-header #buttons-section > .navbar-nav {
+        gap: .25rem;
+    }
+
+    .c-header .nav-item #weather-widget {
+        display: none !important;
+    }
+
+    .c-header .navbar-expand-lg .navbar-toggler {
+        display: block;
+    }
+
+    .c-header .hide-mobile.collapse.navbar-collapse {
+        display: none !important;
+    }
+}

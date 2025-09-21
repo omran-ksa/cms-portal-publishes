@@ -1,0 +1,112 @@
+﻿@using System.Globalization
+@using Umbraco.Cms.Core.Models.Blocks
+@using Umbraco.Cms.Core.Models
+@using Umbraco.Cms.Core.Strings
+@using Umbraco.Extensions
+@using Umbraco.Models
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback
+@inject IShortStringHelper ShortStringHelper
+
+@{
+    Layout = "layout.cshtml";
+
+    // ===== Culture bootstrap (match header/news) =====
+    var routeCulture = ViewContext?.RouteData?.Values?["culture"]?.ToString();
+    if (string.IsNullOrWhiteSpace(routeCulture))
+    {
+        var firstSeg = (Context.Request.Path.Value ?? "/")
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        if (firstSeg is "ar" or "en") routeCulture = firstSeg;
+    }
+    var currentLang = !string.IsNullOrWhiteSpace(routeCulture)
+        ? (routeCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en")
+        : "ar";
+
+    ViewData["CurrentLang"] = currentLang;
+    var isAr = currentLang == "ar";
+    var dir = isAr ? "rtl" : "ltr";
+    var ui = new CultureInfo(currentLang);
+
+    // ===== Load cards from this page =====
+    var blocks = Model?.Value<BlockListModel>("cards") ?? BlockListModel.Empty;
+
+    var cards = blocks
+        .Where(b => b.Content.ContentType.Alias == CardModel.ModelTypeAlias)
+        .Select(b => new CardModel(b.Content, PublishedValueFallback))
+        .OrderByDescending(c => c.Date) // newest first
+        .ToList();
+
+    string GetArticleDetailUrl(CardModel a)
+    {
+        var slug = a.Title?.ToUrlSegment(ShortStringHelper, ui.Name) ?? "article";
+        var id = a.Key.ToString();
+        // hits your controller: [HttpGet("{culture}/articles/details/{slug}/{id}")]
+        return $"/{currentLang}/articles/details/{slug}/{id}";
+    }
+}
+
+<section class="mb-3  c-articles" dir="@dir">
+    <div class="container-fluid px-sm-4 pb-3 pb-md-5">
+
+        <!-- Header -->
+        <div class="row align-items-center justify-content-between g-2 mb-4 mt-2">
+
+            <div class="d-flex align-items-center justify-content-between mb-3 mb-md-4">
+                <h2 class="h4 fw-bold mb-0 @(isAr ? "text-end" : "text-start")">@(isAr ? "المقالات" : "Articles")</h2>
+            </div>
+
+            @* Optional "View All" button — point to your listing page if needed *@
+            @* <div class="col-auto">
+        <a href="@Model.Url()" class="btn btn-outline-primary rounded-pill d-inline-flex align-items-center gap-2">
+          <i class="bi @(isAr ? "bi-chevron-right" : "bi-chevron-left")"></i>
+          @(isAr ? "عرض الجميع" : "View All")
+        </a>
+      </div> *@
+        </div>
+
+        @if (!cards.Any())
+        {
+            <div class="alert alert-info text-center">
+                @(isAr ? "لا توجد مقالات حالياً" : "No articles available right now.")
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var a in cards)
+                {
+                    <div class="col-12 col-md-6 col-lg-4 d-flex">
+                        <article class="card shadow-sm h-100 border-0 position-relative w-100 c-articles__card">
+                            <div class="position-relative">
+                                <div class="ratio ratio-16x9">
+                                    <img class="c-articles__img" src="@a.Image?.Url()" alt="@a.Title" />
+                                </div>
+                            
+                            </div>
+
+                            <div class="card-body">
+                                <h3 class="h6 fw-bold mb-2 text-truncate c-articles__title">
+                                    @a.Title
+                                </h3>
+                                @if (!string.IsNullOrWhiteSpace(a.Description))
+                                {
+                                    <p class="text-secondary mb-0 c-articles__excerpt">
+                                        @a.Description
+                                    </p>
+                                }
+                            </div>
+
+                            <!-- open details (stretched) -->
+                            <a class="stretched-link" href="@GetArticleDetailUrl(a)" hreflang="@currentLang"
+                               aria-label="@((isAr ? "فتح المقال" : "Open article")): @a.Title"></a>
+                        </article>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

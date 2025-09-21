@@ -1,0 +1,649 @@
+﻿@using System.Globalization
+@using Umbraco.Models
+@using Wisys.CMS.UI.Breadcrumbs
+@using Microsoft.AspNetCore.Http
+
+@using Umbraco.Cms.Core.Services
+@using System.Security.Claims
+@inject IMemberService MemberService
+
+@{
+    // Get member data for avatar
+    var email = User.FindFirst(ClaimTypes.Email)?.Value;
+    var member = !string.IsNullOrEmpty(email) ? MemberService.GetByEmail(email) : null;
+
+    // Get session data as fallback
+    Dictionary<string, object> sessionData = null;
+    try
+    {
+        var sessionJson = Context.Session.GetString("CompleteUserData");
+        if (!string.IsNullOrEmpty(sessionJson))
+        {
+            sessionData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(sessionJson);
+        }
+    }
+    catch (Exception)
+    {
+        // Ignore session parsing errors
+        sessionData = null;
+    }
+
+    // Helper to check if field has value
+    bool HasValue(string value)
+    {
+        return !string.IsNullOrWhiteSpace(value) &&
+               !value.Equals("null", StringComparison.OrdinalIgnoreCase) &&
+               !value.Equals("0001-01-01T00:00:00", StringComparison.OrdinalIgnoreCase) &&
+               !value.Equals("NULL", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Helper to get member property value with session fallback
+    string GetMemberValue(string propertyAlias, string sessionKey = null)
+    {
+        // Try database first
+        if (member != null)
+        {
+            var dbValue = member.GetValue(propertyAlias)?.ToString() ?? "";
+            if (HasValue(dbValue)) return dbValue;
+        }
+
+        // Try session as fallback
+        if (sessionData != null)
+        {
+            var sessionKeyToUse = sessionKey ?? propertyAlias;
+
+            // Try the exact key first
+            if (sessionData.ContainsKey(sessionKeyToUse))
+            {
+                var sessionValue = sessionData[sessionKeyToUse]?.ToString() ?? "";
+                if (HasValue(sessionValue)) return sessionValue;
+            }
+
+            // Try with "Extended_" prefix
+            var extendedKey = $"Extended_{sessionKeyToUse}";
+            if (sessionData.ContainsKey(extendedKey))
+            {
+                var extendedValue = sessionData[extendedKey]?.ToString() ?? "";
+                if (HasValue(extendedValue)) return extendedValue;
+            }
+        }
+
+        return "";
+    }
+
+    // Get profile photo
+    var profilePhotoBase64 = GetMemberValue("profilePhoto");
+    var hasProfilePhoto = HasValue(profilePhotoBase64);
+    var defaultAvatar = "~/assets/profile/image.png";
+
+    // Generate avatar URL
+    string GetAvatarUrl()
+    {
+        if (hasProfilePhoto)
+        {
+            return $"data:image/jpeg;base64,{profilePhotoBase64}";
+        }
+        return Url.Content(defaultAvatar) + $"?v={DateTime.Now.Ticks}";
+    }
+}
+
+@{
+    IDictionary<string, PublishedCultureInfo> languages = new Dictionary<string, PublishedCultureInfo>
+        {
+            { "ar", new PublishedCultureInfo("ar", "ar", "العربية", DateTime.UtcNow) },
+            { "en", new PublishedCultureInfo("en", "en", "English",  DateTime.UtcNow) }
+        }; ;
+
+    var HomePageContent = Umbraco.ContentAtRoot().DescendantsOrSelf<HomeModel>().FirstOrDefault();
+    var currentPath = Context.Request.Path.Value?.ToLower() ?? "";
+}
+@{
+    // ===== Culture bootstrap from route / URL (default = "ar") =====
+    var routeCulture = ViewContext?.RouteData?.Values?["culture"]?.ToString();
+
+    if (string.IsNullOrWhiteSpace(routeCulture))
+    {
+        var firstSeg = (Context.Request.Path.Value ?? "/")
+            .Trim('/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        if (firstSeg is "ar" or "en") routeCulture = firstSeg;
+    }
+
+    var currentLang = !string.IsNullOrWhiteSpace(routeCulture)
+        ? (routeCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en")
+        : "ar";
+
+    ViewData["CurrentLang"] = currentLang;
+
+
+    var dir = currentLang == "ar" ? "rtl" : "ltr";
+
+    var isAr = currentLang == "ar";
+    // expose for header (shadow any helpers)
+    string GetCultureTwoLetterCode = currentLang;
+    string GetCultureName = currentLang;
+
+    var ui = new CultureInfo(currentLang);
+
+    // ===== Local helper: build same-page URL with swapped/added culture prefix =====
+    Func<string, string> BuildCultureUrl = (string targetCulture) =>
+    {
+        var path = Context.Request.Path.Value ?? "/";
+        var qs = Context.Request.QueryString.HasValue ? Context.Request.QueryString.Value : "";
+
+        var trimmed = path.Trim('/');
+        var segments = string.IsNullOrEmpty(trimmed)
+            ? new List<string>()
+            : trimmed.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+        if (segments.Count > 0 && (string.Equals(segments[0], "ar", StringComparison.OrdinalIgnoreCase) || string.Equals(segments[0], "en", StringComparison.OrdinalIgnoreCase)))
+        {
+            segments[0] = targetCulture;
+        }
+        else
+        {
+            segments.Insert(0, targetCulture);
+        }
+
+        return "/" + string.Join('/', segments) + qs;
+    };
+}
+<header class="container-fluid   border-bottom   c-header">
+    <nav class="navbar py-1 navbar-expand-lg" dir="@dir">
+        <div id="web-menu-section" class="container-fluid">
+            <div class="justify-content-between navbar-brand-button">
+                <a class="navbar-brand mx-0"
+                   hreflang="@(GetCultureTwoLetterCode)"
+                   href="@BuildCultureUrl(GetCultureTwoLetterCode)"
+                   title="@($"{GetCultureTwoLetterCode}/")">
+                    <img src="~/umbraco/images/logos/logo-with-company-name.png" alt="WiSysPortal" style="max-height:80px;max-width:68vw;   transform: translateX(@(isAr ? "12px" : "-12px"));" />
+
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#mobile-menu-section" aria-controls="mobile-menu-section" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+
+            </div>
+
+            <div class="hide-mobile collapse navbar-collapse  px-4">
+                @if (HomePageContent is not null && HomePageContent.HeaderSitemap?.Any() == true)
+                {
+                    <ul class="navbar-nav px-0">
+                        @foreach (var Sitemap in HomePageContent.HeaderSitemap)
+                        {
+                            string label = Sitemap.Content.Value<string>("label") ?? string.Empty;
+                            Link? MainLink = Sitemap.Content.Value<Link>("mainLink");
+                            List<Link> childLinks = Sitemap.Content.Value<IEnumerable<Link>>("childLinks")?.ToList() ?? [];
+
+                            if (childLinks?.Any() == true)
+                            {
+                               <li class="nav-item dropdown c-fs-14-bold">
+                                      <div class="nav-link dropdown-toggle py-1" role="button"
+                                           data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span>@(MainLink?.Name ?? label)</span>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                      </div>
+
+                                      <ul class="dropdown-menu @(isAr ? "dropdown-menu-end text-start" : "")">
+                                        @foreach (var childLink in childLinks)
+                                        {
+                                          <li>
+                                            <a class="dropdown-item text-start" hreflang="@(GetCultureTwoLetterCode)"
+                                               title="@(childLink.Name)" href="@(childLink.Url)">
+                                              @childLink.Name
+                                            </a>
+                                          </li>
+                                        }
+                                      </ul>
+                                    </li>
+                               }
+                            else
+                            {
+                                if (MainLink is not null)
+                                {
+                                    <li class="nav-item c-fs-14-bolder">
+                                        <a class="nav-link  @(currentPath == (MainLink?.Url?.ToLower() ?? "") ? "text-bolder active text-primary  border-bottom border-3 border-primary" : "")"
+                                           hreflang="@(GetCultureTwoLetterCode)"
+                                           title="@(MainLink.Name)"
+                                           href="@(MainLink.Url)">
+                                            @MainLink.Name
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="#">@(label)</a>
+                                    </li>
+                                }
+                            }
+                        }
+                    </ul>
+                }
+            </div>
+
+            <div class="hide-mobile" id="buttons-section">
+                <ul class="navbar-nav ">
+
+
+                    <!-- Prayer times (desktop only) -->
+                    <li class="nav-item d-none d-lg-flex align-items-center mx-2">
+                        <button id="prayerTriggerDesktop"
+                                class="btn btn-outline-primary rounded-pill px-3 py-2 d-flex align-items-center gap-2"
+                                type="button"
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                                title="@(isAr ? "مواقيت الصلاة" : "Prayer Times")">
+                            <i class="fa-solid fa-mosque"></i>
+                            <span class="d-none d-xl-inline">@(isAr ? "مواقيت الصلاة" : "Prayer Times")</span>
+                        </button>
+                    </li>
+
+                               <!-- Weather widget (desktop) -->
+                        <li class="nav-item d-none d-lg-flex align-items-center mx-2">
+                            @await Html.PartialAsync("Partials/Sections/_WeatherWidget")
+                        </li>
+
+   
+
+                    <li class="nav-item">
+                        @foreach (var lang in languages)
+                        {
+                            if (lang.Key != GetCultureName)
+                            {
+                                <a class="c-btn"
+                                   hreflang="@(lang.Key)"
+                                   href="@BuildCultureUrl(lang.Key)"
+                                   title="@(GetCultureNameByTwoLetterCode(lang.Key))"
+                                   data-no-swup>
+                                    <i class="fa-solid fa-globe"></i>
+                                    <span data-i18n="SwitchLang">@GetLanguageNameByKey(lang.Key)</span>
+                                </a>
+                            }
+                        }
+                    </li>
+
+                  
+
+                  <li class="nav-item pt-1">
+                                    @if (User?.Identity?.IsAuthenticated == true)
+                                    {
+                                        <li class="nav-item dropdown pt-1">
+    @if (User?.Identity?.IsAuthenticated == true)
+    {
+        var displayName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+        displayName = string.IsNullOrWhiteSpace(displayName) 
+                        ? (currentLang == "ar" ? "المستخدم" : "User") 
+                        : displayName.Trim();
+
+                                    var avatar = GetAvatarUrl();
+
+
+        <div class="nav-link dropdown-toggle d-flex align-items-center py-1 px-2 rounded-pill" 
+             role="button" 
+             data-bs-toggle="dropdown" 
+             aria-expanded="false" 
+             style="cursor: pointer; border: 1px solid #e9ecef;">
+            
+          @*  // <img src="@Url.Content(avatar)" *@
+     <img src="@avatar"
+ 
+                 alt="avatar"
+                 class="rounded-circle border border-2 border-primary" 
+                 style="width: 38px; height: 38px; object-fit: cover;" />
+            
+            <span class="mx-2 fw-bold text-dark">
+                @(currentLang == "ar" ? "مرحبا، " : "Welcome, ")@displayName
+            </span>
+            
+            <i class="fa-solid fa-chevron-down text-muted" style="font-size: 11px;"></i>
+        </div>
+
+        <ul class="dropdown-menu @(isAr ? "dropdown-menu-end" : "") shadow-lg border-0 mt-2" 
+            style="min-width: 220px; border-radius: 12px;">
+            
+            <!-- Header -->
+          @*  <li class="px-3 py-2 bg-primary text-white" style="border-radius: 12px 12px 0 0;">
+                <div class="d-flex align-items-center">
+                    <img src="@Url.Content(avatar)" 
+                         alt="avatar"
+                         class="rounded-circle me-2" 
+                         style="width: 32px; height: 32px; object-fit: cover;" />
+                    <div>
+                        <div class="fw-bold small">@displayName</div>
+                        <div class="small opacity-75">@(currentLang == "ar" ? "حساب نشط" : "Active Account")</div>
+                    </div>
+                </div>
+            </li>*@
+
+            <!-- Profile Option -->
+            <li>
+                <a class="dropdown-item d-flex align-items-center py-3 px-3" 
+                   href="/@(currentLang)/profile"
+                   style="transition: all 0.2s ease;">
+                    <div class="me-3 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" 
+                         style="width: 36px; height: 36px;">
+                        <i class="fa fa-solid fa-user text-white"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold text-start mx-1">@(currentLang == "ar" ? "الملف الشخصي" : "My Profile")</div>
+                    </div>
+                </a>
+            </li>
+
+            <!-- Settings Option -->
+           @* <li>
+                <a class="dropdown-item d-flex align-items-center py-3 px-3" 
+                   href="/@(currentLang)/settings"
+                   style="transition: all 0.2s ease;">
+                    <div class="me-3 d-flex align-items-center justify-content-center bg-info bg-opacity-10 rounded-circle" 
+                         style="width: 36px; height: 36px;">
+                        <i class="fa-solid fa-cog text-info"></i>
+                    </div>
+                </a>
+            </li>
+            *@
+            <!-- Divider -->
+            <li><hr class="dropdown-divider mx-3 my-2 py-0"></li>
+
+            <!-- Logout Option -->
+            <li>
+                <a class="dropdown-item d-flex align-items-center py-3 px-3 text-danger" 
+                   href="/account/logout" 
+                   data-no-swup
+                   style="transition: all 0.2s ease;">
+                    <div class="me-3 d-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-circle" 
+                         style="width: 36px; height: 36px;">
+                        <i class="fa-solid fa-sign-out-alt text-danger"></i>
+                    </div>
+                    <div class="fw-semibold  text-start mx-1 justify-content-content-start">
+                        <div class="fw-semibold  text-start mx-1">@(currentLang == "ar" ? "تسجيل الخروج" : "Sign Out")</div>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    }
+    else
+    {
+        <a class="c-btn c-btn-hover c-btn-primary rounded-5 px-4 py-2 fw-bold shadow-sm" 
+           href="/account/login" 
+           data-no-swup
+           style="transition: all 0.3s ease;">
+            <i class="fa-solid fa-sign-in-alt me-2"></i>
+            <span>@(currentLang == "ar" ? "تسجيل الدخول" : "Sign In")</span>
+        </a>
+    }
+</li>
+                            // var displayName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value?.Split(" ")[0];
+                            // displayName = string.IsNullOrWhiteSpace(displayName) 
+                            //                             ? (currentLang == "ar" ? "المستخدم" : "User") 
+                            //                             : displayName.Trim();
+
+                            //             var avatar = "~/assets/profile/image.png"+$"?v={DateTime.Now.Ticks}";;
+
+                            //             <a class="d-flex align-items-center align-content-center" href="/@(currentLang)/profile">
+                                    
+                            //                 <span class="mx-2  fw-bolder">@(currentLang == "ar" ? "مرحبا, " : "Welcome, ") @displayName</span>
+                            //                         <img src="@Url.Content(avatar)" alt="avatar"
+                            //                      class="rounded-circle me-2  border border-2 border-primary d-inline-block " style="width:36px;height:36px;object-fit:cover;" />
+                            //             </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="c-btn c-btn-hover c-btn-primary rounded-5" href="/account/login" data-no-swup>
+                                            <span>@(currentLang == "ar" ? "تسجيل الدخول" : "Login")</span>
+                                        </a>
+                                    }
+                                </li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="mobile-menu-section" class="collapse">
+            @if (HomePageContent is not null && HomePageContent.HeaderSitemap?.Any() == true)
+            {
+                <ul class="navbar-nav px-2">
+                    @foreach (var Sitemap in HomePageContent.HeaderSitemap)
+                    {
+                        string label = Sitemap.Content.Value<string>("label") ?? string.Empty;
+                        Link? MainLink = Sitemap.Content.Value<Link>("mainLink");
+                        List<Link> childLinks = Sitemap.Content.Value<IEnumerable<Link>>("childLinks")?.ToList() ?? [];
+
+                        if (childLinks?.Any() == true)
+                        {
+                            <li class="nav-item dropdown">
+                                <div class="nav-link dropdown-toggle py-1  @(currentPath == (MainLink?.Url?.ToLower() ?? "") ? "text-bold active text-primary  border-bottom border-3 border-primary" : "")" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span>@(MainLink?.Name ?? label)</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </div>
+                                <ul class="dropdown-menu">
+                                    @foreach (var childLink in childLinks)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item text-start"
+                                               hreflang="@(GetCultureTwoLetterCode)"
+                                               title="@(childLink.Name)"
+                                               href="@(childLink.Url)">
+                                                @childLink.Name
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            if (MainLink is not null)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                       hreflang="@(GetCultureTwoLetterCode)"
+                                       title="@(MainLink.Name)"
+                                       href="@(MainLink.Url)">
+                                        @MainLink.Name
+                                    </a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">@(label)</a>
+                                </li>
+                            }
+                        }
+                    }
+                </ul>
+
+                <ul class="navbar-nav px-2">
+                       <li class="nav-item my-2 d-lg-none">
+                            @await Html.PartialAsync("Partials/Sections/_WeatherWidget")
+                        </li>
+
+                    <li class="nav-item">
+                        @foreach (var lang in languages)
+                        {
+                            if (lang.Key != GetCultureName)
+                            {
+                                <a class="nav-link"
+                                   hreflang="@(lang.Key)"
+                                   href="@BuildCultureUrl(lang.Key)"
+                                   title="@(GetCultureNameByTwoLetterCode(lang.Key))"
+                                   data-no-swup>
+                                    <i class="fa-solid fa-globe"></i>
+                                    <span data-i18n="SwitchLang">@GetLanguageNameByKey(lang.Key)</span>
+                                </a>
+                            }
+                        }
+                    </li>
+
+                  <li class="nav-item">
+                                    @if (User?.Identity?.IsAuthenticated == true)
+                                    {
+
+                                     
+                                              var displayName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+      displayName = string.IsNullOrWhiteSpace(displayName) 
+                      ? (currentLang == "ar" ? "المستخدم" : "User") 
+                      : displayName.Trim();
+
+      // var avatar = "~/assets/profile/image.png" + $"?v={DateTime.Now.Ticks}";
+                            var avatar = GetAvatarUrl();
+
+      <div class="nav-link dropdown-toggle d-flex align-items-center py-1 px-2 rounded-pill" 
+           role="button" 
+           data-bs-toggle="dropdown" 
+           aria-expanded="false" 
+           style="cursor: pointer; border: 1px solid #e9ecef;">
+          
+      @*    <img src="@Url.Content(avatar)" *@
+                                <img src="@avatar"
+                                     alt="avatar"
+               class="rounded-circle border border-2 border-primary" 
+               style="width: 38px; height: 38px; object-fit: cover;" />
+          
+          <span class="mx-2 fw-bold text-dark">
+              @(currentLang == "ar" ? "مرحبا، " : "Welcome, ")@displayName
+          </span>
+          
+          <i class="fa-solid fa-chevron-down text-muted" style="font-size: 11px;"></i>
+      </div>
+
+      <ul class="dropdown-menu mb-2 @(isAr ? "dropdown-menu-end" : "") shadow-lg border-0 mt-2" 
+          style="min-width: 220px; border-radius: 12px;">
+          
+          <!-- Header -->
+        @*  <li class="px-3 py-2 bg-primary text-white" style="border-radius: 12px 12px 0 0;">
+              <div class="d-flex align-items-center">
+                  <img src="@Url.Content(avatar)" 
+                       alt="avatar"
+                       class="rounded-circle me-2" 
+                       style="width: 32px; height: 32px; object-fit: cover;" />
+                  <div>
+                      <div class="fw-bold small">@displayName</div>
+                      <div class="small opacity-75">@(currentLang == "ar" ? "حساب نشط" : "Active Account")</div>
+                  </div>
+              </div>
+          </li>*@
+
+          <!-- Profile Option -->
+          <li>
+              <a class="dropdown-item d-flex align-items-center py-3 px-3" 
+                 href="/@(currentLang)/profile"
+                 style="transition: all 0.2s ease;">
+                  <div class="me-3 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" 
+                       style="width: 36px; height: 36px;">
+                      <i class="fa fa-solid fa-user text-white"></i>
+                  </div>
+                  <div>
+                      <div class="fw-semibold text-start mx-1">@(currentLang == "ar" ? "الملف الشخصي" : "My Profile")</div>
+                  </div>
+              </a>
+          </li>
+
+          <!-- Settings Option -->
+         @* <li>
+              <a class="dropdown-item d-flex align-items-center py-3 px-3" 
+                 href="/@(currentLang)/settings"
+                 style="transition: all 0.2s ease;">
+                  <div class="me-3 d-flex align-items-center justify-content-center bg-info bg-opacity-10 rounded-circle" 
+                       style="width: 36px; height: 36px;">
+                      <i class="fa-solid fa-cog text-info"></i>
+                  </div>
+              </a>
+          </li>
+          *@
+          <!-- Divider -->
+          <li><hr class="dropdown-divider mx-3 my-2 py-0"></li>
+
+          <!-- Logout Option -->
+          <li>
+              <a class="dropdown-item d-flex align-items-center py-3 px-3 text-danger" 
+                 href="/account/logout" 
+                 data-no-swup
+                 style="transition: all 0.2s ease;">
+                  <div class="me-3 d-flex align-items-center justify-content-center bg-danger bg-opacity-10 rounded-circle" 
+                       style="width: 36px; height: 36px;">
+                      <i class="fa-solid fa-sign-out-alt text-danger"></i>
+                  </div>
+                  <div class="fw-semibold  text-start mx-1 justify-content-content-start">
+                      <div class="fw-semibold  text-start mx-1">@(currentLang == "ar" ? "تسجيل الخروج" : "Sign Out")</div>
+                  </div>
+              </a>
+          </li>
+      </ul>
+                                        
+                                        @*
+                                        var avatar = "~/assets/profile/image.png"+ $"?v={DateTime.Now.Ticks}";;
+                            var displayName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+
+                            displayName = string.IsNullOrWhiteSpace(displayName) 
+                                                        ? (currentLang == "ar" ? "المستخدم" : "User") 
+                                                        : displayName.Trim();
+
+
+                                        <a class="d-flex align-items-center align-content-center fw-bold fs-6" href="/@(currentLang)/profile">
+                                            <img src="@Url.Content(avatar)" alt="avatar"
+                                                 class="rounded-circle border border-2 border-primary d-inline-block" style="width:36px;height:36px;object-fit:cover;" />
+                                            <span class="mx-2   fw-bold ">@(currentLang == "ar" ? "مرحبا, " : "Welcome, ") @displayName</span>
+                                        </a>
+                                        *@
+                             
+                                      
+                                    }
+                                    else
+                                    {
+                                        <a class="c-btn c-btn-hover c-btn-primary rounded-5" href="/account/login" data-no-swup>
+                                            <span>@(currentLang == "ar" ? "تسجيل الدخول" : "Login")</span>
+                                        </a>
+                                    }
+                                </li>
+
+                </ul>
+            }
+        </div>
+    </nav>
+</header>
+
+
+@{
+
+      var path = (Context.Request.Path.Value ?? "/").Trim('/').ToLowerInvariant();
+
+    // Home path = "" (root) OR just "ar"/"en"
+    bool isHome = string.IsNullOrEmpty(path) ||
+                  path == "ar" ||
+                  path == "en";
+
+
+    var breadcrumb = BreadcrumbBuilder.FromUmbraco(Model, ui);
+
+    breadcrumb.HomeUrl = "/" + currentLang; 
+
+    var replaceLast = ViewData["BreadcrumbReplaceLast"] as Wisys.CMS.UI.Breadcrumbs.BreadcrumbItem;
+    var append = ViewData["BreadcrumbAppend"] as List<Wisys.CMS.UI.Breadcrumbs.BreadcrumbItem>;
+
+    if (replaceLast != null && breadcrumb.Items?.Count > 0)
+    {
+   breadcrumb.Items[breadcrumb.Items.Count - 1].Active = false ;
+        breadcrumb.Items.Add(replaceLast);
+}
+
+if (append != null && append.Count > 0)
+{
+    breadcrumb.Items.AddRange(append);
+    for (int i = 0; i < breadcrumb.Items.Count; i++)
+        breadcrumb.Items[i].Active = i == breadcrumb.Items.Count - 1;
+}
+
+}
+                     
+@if (!isHome && (breadcrumb?.Items?.Count??0) > 0)
+{
+   @await Html.PartialAsync("Partials/Sections/_Breadcrumbs", breadcrumb)
+}
+

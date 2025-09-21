@@ -1,0 +1,132 @@
+﻿@using System.Globalization
+@using Umbraco.Cms.Web.Common.PublishedModels
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@await Html.PartialAsync("~/Views/Partials/Layout/MetaData.cshtml")
+
+@{
+    Layout = null;
+    var ui = new CultureInfo(ViewBag.Culture ?? "ar");
+
+    var isAr = ViewBag.IsArabic??true;
+    var dir = isAr ? "rtl" : "ltr";
+
+    // Culture switch (safe even if URL has no culture)
+    var currentPath = Context.Request.Path.Value ?? "/";
+    string switchUrl;
+    if (currentPath.StartsWith("/ar", StringComparison.OrdinalIgnoreCase))
+        switchUrl = currentPath.Replace("/ar", "/en");
+    else if (currentPath.StartsWith("/en", StringComparison.OrdinalIgnoreCase))
+        switchUrl = currentPath.Replace("/en", "/ar");
+    else
+        switchUrl = isAr ? "/en" + currentPath : "/ar" + currentPath;
+
+    string langLabel = isAr
+        ? Umbraco.GetDictionaryValue("Login.LanguageEnglish", ui)
+        : Umbraco.GetDictionaryValue("Login.LanguageArabic", ui);
+}
+
+@await Html.PartialAsync("~/Views/Partials/Layout/Styles.cshtml")
+<style>
+
+    .login-microsoft-btn {
+        background-color: white; /* your main color */
+        border: 2px solid #74509E;
+        color: #74509E;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+        -webkit-tap-highlight-color: transparent; /* no blue flash on mobile */
+    }
+
+        /* Hover */
+        .login-microsoft-btn:hover {
+            background-color: #74509E;
+            border-color: #74509E;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        /* Focus & Active */
+        .login-microsoft-btn:focus,
+        .login-microsoft-btn:focus-visible,
+        .login-microsoft-btn:active,
+        .login-microsoft-btn:active:focus {
+            background-color: #74509E;
+            border-color: #74509E;
+            color: #fff;
+            box-shadow: none !important; /* remove Bootstrap glow */
+            outline: none !important;
+        }
+
+        /* Disabled */
+        .login-microsoft-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+</style>
+<div class="min-vh-100 login-page" dir="@dir" style=" font-family:'Cairo', 'Inter', Arial, sans-serif;">
+    <div class="min-vh-100">
+        <div class="row g-0 min-vh-100">
+
+            <!-- Login (FIRST on mobile), SECOND on desktop -->
+            <div class="col-12 col-md-6 d-flex flex-column bg-white order-1 order-md-2 login-section">
+                <!-- Mobile language switch (inline, top-left/right) -->
+                <div class="d-md-none p-3 text-@(isAr ? "start" : "end")">
+                    <a href="@switchUrl" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 fw-bold">
+                        <i class="bi bi-globe"></i><span>@langLabel</span>
+                    </a>
+                </div>
+
+                <!-- Desktop language switch (floating) -->
+                <div class="d-none d-md-block position-absolute top-0 @(isAr ? "start-0" : "end-0") p-3 mt-2 me-3 ms-3 lang-btn">
+                    <a href="@switchUrl" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 fw-bold">
+                        <i class="bi bi-globe"></i><span>@langLabel</span>
+                    </a>
+                </div>
+
+                <!-- Centered login card -->
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center px-3 px-sm-4 px-md-5">
+                    <div class="w-100" style="max-width:460px;">
+                        <div class="text-center text-md-@(isAr ? "end" : "start") mb-3 mb-md-4">
+                            <h4 class="fw-bold mb-2">@Umbraco.GetDictionaryValue("Login.SignInTitle",ui)</h4>
+                            <div class="fw-bold text-muted">@Umbraco.GetDictionaryValue("Login.SignInSubtitle",ui)</div>
+                        </div>
+
+                        <a href="/account/login/microsoft"
+                           class="btn w-100 d-flex align-items-center justify-content-center gap-2 py-3 rounded-3 login-microsoft-btn"
+                           data-no-swup>
+                            <span class="fw-bold text-truncate">
+                                @Umbraco.GetDictionaryValue("Login.SignInWithMicrosoft", ui)
+                            </span>
+                            <img src="~/umbraco/images/microsoft-office-365-logo.png" alt="Microsoft 365" height="24" />
+                        </a>
+                        <div class="text-center text-muted small mt-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brand / Welcome (SECOND on mobile), FIRST on desktop) -->
+            <div class="col-12 col-md-6 d-flex flex-column order-2 order-md-1 welcome-section">
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center px-3 px-sm-4 px-md-5 py-4">
+                    <div class="text-center text-md-@(isAr ? "end" : "start")" style="max-width:620px;">
+                        <div class="mb-3 mb-md-4">
+                            <img src="~/umbraco/images/logos/logo-with-company-name.png"
+                                 alt="AlWatania Information Systems"
+                                 class="img-fluid"
+                                 style="max-height:70px;" />
+                        </div>
+                        <h5 class="fw-bold mb-0 px-2 px-md-3">@Umbraco.GetDictionaryValue("Login.WelcomeMessage",ui)</h5>
+                    </div>
+                </div>
+
+                <div class="px-3 px-sm-4 px-md-5 py-3 text-muted text-center text-md-@(isAr ? "end" : "start") small">
+                    @DateTime.Now.Year @Umbraco.GetDictionaryValue("Login.FooterText",ui)
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("~/Views/Partials/Layout/Scripts.cshtml")

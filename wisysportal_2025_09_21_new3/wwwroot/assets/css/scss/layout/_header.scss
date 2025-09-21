@@ -1,0 +1,269 @@
+// -----------------------------------------------------------------------------
+// This file contains all styles related to the header of the site/application.
+// -----------------------------------------------------------------------------
+body {
+    > swup > header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        user-select: none;
+        align-content: center;
+        width: 100%;
+        min-height: toRem(100px);
+
+        @include resDown(md) {
+            min-height: toRem(60px);
+        }
+
+        background-color: $default-background;
+
+        nav {
+            padding: 0 !important;
+            margin: 0 !important;
+
+            #web-menu-section {
+                margin: 0 !important;
+                gap: toRem(64px);
+                padding: toRem(20px) toRem(100px) !important;
+
+                @include resDown(xl) {
+                    gap: toRem(16px);
+                }
+
+                @include resDown(md) {
+                    padding: toRem(10px) toRem(20px) !important;
+                    flex-wrap: nowrap !important;
+                }
+
+                &.scrolling {
+                    border-bottom: toRem(1px) solid $color-Primary-50;
+                }
+
+                .navbar-brand-button {
+                    display: flex;
+                    align-items: center;
+                    gap: toRem(10px);
+
+                    @include resDown(lg) {
+                        width: 100%;
+                        justify-content: space-between;
+                    }
+
+                    @include resDown(md) {
+                        gap: toRem(5px);
+                    }
+
+                    .navbar-brand {
+                        margin: 0;
+
+                        img {
+                            width: toRem(120px);
+
+                            @include resDown(lg) {
+                                width: toRem(90px);
+                            }
+                            //don't remove this even if it out of responsive scope
+                            @include resDown(sm) {
+                                width: toRem(60px);
+                            }
+                        }
+                    }
+
+                    button.navbar-toggler {
+                        border: unset;
+                        box-shadow: unset;
+                        padding: unset;
+
+                        .navbar-toggler-icon {
+                            --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='25' height='14' viewBox='0 0 25 14' fill='none'%3e%3crect x='0.5' width='24' height='2' fill='%237451A1'/%3e%3crect x='0.5' y='6' width='24' height='2' fill='%237451A1'/%3e%3crect x='0.5' y='12' width='24' height='2' fill='%237451A1'/%3e%3c/svg%3e");
+                        }
+                    }
+                }
+
+                .navbar-nav {
+                    gap: toRem(10px);
+                    padding: 0 !important;
+
+                    @include resDown(xl) {
+                        flex-direction: row;
+                    }
+
+                    @include resDown(md) {
+                        gap: toRem(5px);
+                    }
+
+                    .nav-item {
+                        align-content: center;
+
+                        .nav-link {
+                            color: $color-Primary-900;
+                            @include text-style($body-medium, $line-height-medium, var(--font-bold));
+
+                            &.dropdown-toggle {
+                                display: flex;
+                                flex-direction: row;
+                                align-items: center;
+                                justify-content: center;
+                                gap: toRem(10px);
+
+                                svg,
+                                Path {
+                                    fill: $color-Primary-900;
+                                }
+
+                                &::after {
+                                    content: unset;
+                                }
+                            }
+                        }
+
+                        .dropdown-menu {
+                            &.show {
+                                display: flex;
+                                flex-direction: column;
+                                gap: toRem(24px);
+                                padding: toRem(24px);
+                                border-radius: toRem(10px);
+                                --bs-dropdown-spacer: #{toRem(16px)};
+                                --bs-dropdown-min-width: #{toRem(324px)};
+                                border: unset;
+                                @include boxShadow(bottom, toRem(4px), toRem(30px), toRem(0px), black, 0.16);
+                            }
+
+                            &[data-bs-popper] {
+                                @include langStyles(ar) {
+                                    left: unset;
+                                    right: 0;
+                                }
+
+                                @include langStyles(en) {
+                                    left: 0;
+                                    right: unset;
+                                }
+                            }
+
+                            li {
+                                text-align: start;
+
+                                .dropdown-item {
+                                    margin: 0;
+                                    padding: 0;
+                                    @include text-style($body-medium, $line-height-medium, var(--font-bold));
+
+                                    @include on-event() {
+                                        color: $color-Primary-900;
+                                        background-color: unset;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            #mobile-menu-section {
+                width: 100%;
+                background-color: $color-Primary-50;
+                padding: toRem(20px) toRem(100px) !important;
+                transition: 0.2s;
+
+                @include resUp(lg) {
+                    display: none !important;
+                }
+
+                @include resDown(md) {
+                    padding: toRem(0px) !important;
+                }
+
+                &.collapsing {
+                    padding: toRem(0px) toRem(20px) !important;
+                }
+
+                .navbar-nav {
+                    gap: toRem(24px);
+                    padding: toRem(20px) !important;
+
+                    .nav-item {
+                        display: flex;
+                        flex-direction: column;
+                        gap: toRem(10px);
+
+                        .nav-link {
+                            padding: unset;
+                            color: $color-Primary-900;
+                            @include text-style($body-medium, $line-height-medium, var(--font-bold));
+
+                            &.dropdown-toggle {
+                                display: flex;
+                                flex-direction: row;
+                                align-items: center;
+                                justify-content: space-between;
+                                gap: toRem(15px);
+
+                                svg,
+                                Path {
+                                    fill: $color-Primary-900;
+                                }
+
+                                &::after {
+                                    content: unset;
+                                }
+                            }
+                        }
+
+                        .dropdown-menu {
+                            &.show {
+                                display: flex;
+                                flex-direction: column;
+                                gap: toRem(15px);
+                                padding: unset;
+                                border-radius: unset;
+                                --bs-dropdown-spacer: #{toRem(0px)};
+                                --bs-dropdown-min-width: #{toRem(0px)};
+                                border: unset;
+                                background-color: $color-Primary-50;
+                            }
+
+                            li {
+                                text-align: start;
+
+                                .dropdown-item {
+                                    margin: 0;
+                                    padding: 0;
+                                    @include text-style($body-medium, $line-height-medium, var(--font-family));
+
+                                    @include on-event() {
+                                        color: $color-Primary-900;
+                                        background-color: unset;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+.c-header {
+    position: sticky;
+    top: 0;
+    left:0;
+    z-index: 5;
+}
+
+
+[dir="rtl"] .navbar .dropdown-menu {
+    text-align: right;
+}
+
+[dir="ltr"] .navbar .dropdown-menu {
+    text-align: left;
+}
+
+
+

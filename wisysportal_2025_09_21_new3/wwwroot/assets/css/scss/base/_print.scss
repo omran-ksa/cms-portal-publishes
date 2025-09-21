@@ -1,0 +1,29 @@
+/* Print specific styles */
+@media print {
+    @page {
+        size: A4 landscape;
+        /* Set landscape orientation */
+        margin: 0;
+        /* Remove default margin */
+    }
+    body {
+        margin: 0;
+        /* Remove body margin */
+        padding: 0;
+        /* Remove padding */
+        main{
+            margin: 0;
+            /* Remove body margin */
+            padding: 0;
+            /* Remove padding */
+        }
+
+        header,
+        footer {
+            display: none !important;
+            /* Hide header and footer during printing */
+        }
+
+        /* Additional print-specific styles can be added here */
+    }
+}

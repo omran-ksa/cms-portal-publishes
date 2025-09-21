@@ -1,0 +1,117 @@
+// -----------------------------------------------------------------------------
+// This file contains all styles related to the footer of the site/application.
+// -----------------------------------------------------------------------------
+body {
+    > swup > footer {
+        display: flex;
+        flex-direction: column;
+        gap: toRem(50px);
+        padding: toRem(50px) toRem(240px);
+        border-top: toRem(2px) solid $color-Primary-50;
+
+        @include resDown(xl) {
+            gap: toRem(25px);
+            padding: toRem(25px) toRem(120px);
+        }
+
+        @include resDown(md) {
+            padding: toRem(25px) toRem(60px);
+        }
+
+        &.mini-footer {
+            padding: toRem(16px) toRem(240px);
+
+            @include resDown(xl) {
+                padding: toRem(12px) toRem(120px);
+            }
+
+            @include resDown(md) {
+                padding: toRem(8px) toRem(60px);
+            }
+        }
+
+        .head {
+            img {
+                width: toRem(130px);
+            }
+        }
+
+        .sitemap {
+            .row {
+                .group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: toRem(32px);
+
+                    @include resDown(xl) {
+                        gap: toRem(16px);
+                        padding-bottom: toRem(12.5px);
+                    }
+
+                    h5 {
+                        margin: 0;
+                        @include text-style($body-medium, $line-height-medium, var(--font-bold));
+                    }
+
+                    ul {
+                        display: flex;
+                        flex-direction: column;
+                        gap: toRem(24px);
+
+                        @include resDown(xl) {
+                            gap: toRem(12px);
+                        }
+
+                        list-style: none;
+                        padding: 0;
+
+                        li {
+                            a {
+                                @include text-style($body-medium, $line-height-medium, var(--font-family));
+
+                                &.bold {
+                                    @include text-style($body-medium, $line-height-medium, var(--font-bold));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .tail {
+            .container {
+                padding: 0;
+
+                .row {
+                    display: flex;
+                    flex-wrap: wrap;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    @include resDown(xl) {
+                        flex-direction: column;
+                        justify-content: center;
+                    }
+
+                    .copy-right {
+                        width: fit-content;
+
+                        p {
+                            margin: 0;
+                        }
+                    }
+
+                    .links {
+                        display: flex;
+                        flex-wrap: wrap;
+                        flex-direction: row;
+                        justify-content: center;
+                        width: fit-content;
+                    }
+                }
+            }
+        }
+    }
+}

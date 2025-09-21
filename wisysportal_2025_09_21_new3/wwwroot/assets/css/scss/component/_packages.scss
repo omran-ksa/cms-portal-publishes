@@ -1,0 +1,164 @@
+.packages {
+    .package-item {
+        margin: toRem(24px);
+        border-radius: toRem(20px);
+        padding: toRem(16px) toRem(32px) toRem(32px);
+        background-color: $default-background;
+        @include boxShadow(bottom, 4px, 30px, 0, #000000, 0.08);
+
+        @include resDown(md) {
+            margin: toRem(12px) toRem(0px);
+        }
+
+        .package-item-header {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            gap: toRem(16px);
+            padding-bottom: toRem(16px);
+
+            .title {
+                user-select: none;
+            }
+
+            .package-item-info {
+                .final-price {
+                    .price {
+                        @include text-style($title-h1, $line-height-h1, var(--font-bold));
+                    }
+
+                    .currency {
+                        user-select: none;
+                        @include text-style($title-h6, $line-height-h6, var(--font-family));
+                    }
+                }
+
+                .subtitle {
+                    user-select: none;
+                    @include text-style($body-medium, $line-height-medium, var(--font-family));
+                }
+            }
+        }
+
+        .package-item-body {
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            gap: toRem(16px);
+
+            @include resDown(md) {
+                flex-direction: column-reverse;
+            }
+
+            .features {
+                display: flex;
+                flex-direction: column;
+                text-align: start;
+                gap: toRem(5px);
+                list-style: none;
+                /* Remove default markers */
+                padding: 0;
+                margin: 0;
+                height: var(--features-height);
+
+                @include resDown(md) {
+                    height: unset;
+                }
+
+                .feature {
+                    position: relative;
+
+                    @include langStyles(ar) {
+                        padding-right: toRem(25px);
+                        /* Adjust to fit the SVG size */
+                    }
+
+                    @include langStyles(en) {
+                        padding-left: toRem(25px);
+                        /* Adjust to fit the SVG size */
+                    }
+
+                    @include text-style($body-large, $line-height-large, var(--font-family));
+
+                    &::before {
+                        content: '';
+                        position: absolute;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        width: toRem(19px);
+                        height: toRem(13px);
+                        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="19" height="13" fill="none" viewBox="0 0 19 13"><path d="M18.1094 0.640625C18.6172 1.10938 18.6172 1.92969 18.1094 2.39844L8.10938 12.3984C7.64062 12.9062 6.82031 12.9062 6.35156 12.3984L1.35156 7.39844C0.84375 6.92969 0.84375 6.10938 1.35156 5.64062C1.82031 5.13281 2.64062 5.13281 3.10938 5.64062L7.21094 9.74219L16.3516 0.640625C16.8203 0.132812 17.6406 0.132812 18.1094 0.640625Z" fill="%237451A1"/></svg>');
+                        background-size: contain;
+                        background-repeat: no-repeat;
+                    }
+
+
+                    @include langStyles(ar) {
+                        &::before {
+                            right: 0;
+                        }
+                    }
+
+                    @include langStyles(en) {
+                        &::before {
+                            left: 0;
+                        }
+                    }
+                }
+            }
+
+            .c-btn {
+                width: 100%;
+            }
+        }
+
+        &.best-seller {
+            position: relative;
+            color: $Color-White;
+            background-color: $color-Primary-500;
+
+            &::after {
+                content: attr(data-badge); /* Take value from the attribute */
+                position: absolute;
+                top: toRem(20px);
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+                width: fit-content;
+
+                @include text-style($body-small, $line-height-small, var(--font-family));
+                border-radius: toRem(50px);
+                padding: toRem(10px) toRem(16px);
+                background-color: $color-Orange-500;
+            }
+
+            @include langStyles(ar) {
+                &::after {
+                    left: toRem(-30px);
+                }
+            }
+
+            @include langStyles(en) {
+                &::after {
+                    right: toRem(-30px);
+                }
+            }
+
+            .package-item-header {
+                .horizontal-line {
+                    border-top-color: $color-Primary-200;
+                }
+            }
+
+            .package-item-body {
+                .features {
+                    .feature {
+                        &::before {
+                            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="19" height="13" fill="none" viewBox="0 0 19 13"><path d="M18.1094 0.640625C18.6172 1.10938 18.6172 1.92969 18.1094 2.39844L8.10938 12.3984C7.64062 12.9062 6.82031 12.9062 6.35156 12.3984L1.35156 7.39844C0.84375 6.92969 0.84375 6.10938 1.35156 5.64062C1.82031 5.13281 2.64062 5.13281 3.10938 5.64062L7.21094 9.74219L16.3516 0.640625C16.8203 0.132812 17.6406 0.132812 18.1094 0.640625Z" fill="%23fff"/></svg>');
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

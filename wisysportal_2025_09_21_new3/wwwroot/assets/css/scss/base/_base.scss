@@ -1,0 +1,92 @@
+// -----------------------------------------------------------------------------
+// This file contains very basic styles.
+// -----------------------------------------------------------------------------
+
+:root {
+    --transition: 0.4s;
+
+    @include resDown(md) {
+        --transition: 0.3s;
+    }
+}
+
+html {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+
+    @include langStyles(ar) {
+        direction: rtl;
+    }
+
+    @include langStyles(en) {
+        direction: ltr;
+    }
+}
+
+html,
+body,
+header,
+main,
+footer {
+    background: $default-background;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+    transition: max-height var(--transition) ease-out, min-height var(--transition) ease-out, height var(--transition) ease-out;
+}
+
+* {
+    outline: none;
+    caret-color: transparent;
+}
+
+.main-height{
+    height: var(--main-height, 90vh);
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+    caret-color: auto;
+}
+
+a {
+    text-decoration: none;
+    cursor: pointer;
+    color: $text-color;
+    @include text-style($body-medium, $line-height-medium, var(--font-family));
+
+    @include on-event {
+        color: $text-color;
+    }
+}
+
+// Remark: used in flip left and right fa icon for example fa-arrow-left
+svg.c-fa-direction {
+    @include langStyles(ar) {
+        transform: rotateY(0deg);
+    }
+
+    @include langStyles(en) {
+        transform: rotateY(180deg);
+    }
+}
+
+.text-start{
+    text-align: start !important;
+}
+
+.text-end{
+    text-align: end !important;
+}
+
+.fit-width{
+    width: fit-content;
+}

@@ -1,0 +1,665 @@
+﻿@using System.Globalization
+@using Umbraco.Cms.Core.Strings
+@using Umbraco.Cms.Web.Common
+@using Umbraco.Cms.Web.Common.UmbracoContext
+@using Wisys.CMS.UI.Breadcrumbs
+@using Microsoft.AspNetCore.Http
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+
+@using Umbraco.Cms.Core.Services
+@using System.Security.Claims
+@inject IMemberService MemberService
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback;
+
+
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback
+@inject IShortStringHelper ShortStringHelper
+@inject UmbracoHelper UmbracoHelper
+
+@inject Umbraco.Cms.Core.Web.IUmbracoContextAccessor UmbracoContextAccessor
+@inject Umbraco.Cms.Core.Models.PublishedContent.IPublishedValueFallback PublishedValueFallback
+
+@{
+    Layout = "layout.cshtml";
+    var ui = CultureInfo.CurrentUICulture;
+    var isAr = ui.TwoLetterISOLanguageName == "ar";
+    var dir = isAr ? "rtl" : "ltr";
+    Func<string, string> U = slug => isAr ? $"/ar/{slug}" : $"/en/{slug}";
+
+    // ===== Section 1: mini cards =====
+    var miniCards = new[]
+    {
+        new { Url = U("services"),         Icon = "fa-link",         TextAr = "الخدمات الالكترونية", TextEn = "E-Services" },
+        new { Url = U("policies"),         Icon = "fa-user-shield",  TextAr = "سياسات وإجراءات",     TextEn = "Policies & Procedures" },
+        new { Url = U("knowledge-center"), Icon = "fa-circle-play",  TextAr = "مركز المعرفة",         TextEn = "Knowledge Center" }
+    };
+
+    // ===== Section 2: news & articles (ads) =====
+    var ads = new[]
+    {
+        new {
+            Url = U("news"),
+            Icon = "fa-newspaper",
+            TitleAr = "الأخبار",
+            TitleEn = "News",
+            CtaAr = "عرض الأخبار",
+            CtaEn = "View News",
+            TileMod = "portal-tile--news"
+        },
+        new {
+            Url = U("articles"),
+            Icon = "fa-book-open",
+            TitleAr = "المقالات",
+            TitleEn = "Articles",
+            CtaAr = "عرض المقالات",
+            CtaEn = "View Articles",
+            TileMod = "portal-tile--articles"
+        }
+    };
+
+    IPublishedElement sliderModel =
+        (Model.Value<BlockListModel>("AdsCards")?.FirstOrDefault()?.Content as IPublishedElement)
+        ?? (Model as IPublishedElement);
+
+
+}
+
+@{
+    // ===== User Avatar with Session Fallback =====
+    // Get member data for avatar
+    var email = User.FindFirst(ClaimTypes.Email)?.Value;
+    var member = !string.IsNullOrEmpty(email) ? MemberService.GetByEmail(email) : null;
+
+    // Get session data as fallback
+    Dictionary<string, object> sessionData = null;
+    try
+    {
+        var sessionJson = Context.Session.GetString("CompleteUserData");
+        if (!string.IsNullOrEmpty(sessionJson))
+        {
+            sessionData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(sessionJson);
+        }
+    }
+    catch (Exception)
+    {
+        // Ignore session parsing errors
+        sessionData = null;
+    }
+
+    // Helper to check if field has value
+    bool HasValue(string value)
+    {
+        return !string.IsNullOrWhiteSpace(value) &&
+               !value.Equals("null", StringComparison.OrdinalIgnoreCase) &&
+               !value.Equals("0001-01-01T00:00:00", StringComparison.OrdinalIgnoreCase) &&
+               !value.Equals("NULL", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Helper to get member property value with session fallback
+    string GetMemberValue(string propertyAlias, string sessionKey = null)
+    {
+        // Try database first
+        if (member != null)
+        {
+            var dbValue = member.GetValue(propertyAlias)?.ToString() ?? "";
+            if (HasValue(dbValue)) return dbValue;
+        }
+
+        // Try session as fallback
+        if (sessionData != null)
+        {
+            var sessionKeyToUse = sessionKey ?? propertyAlias;
+
+            // Try the exact key first
+            if (sessionData.ContainsKey(sessionKeyToUse))
+            {
+                var sessionValue = sessionData[sessionKeyToUse]?.ToString() ?? "";
+                if (HasValue(sessionValue)) return sessionValue;
+            }
+
+            // Try with "Extended_" prefix
+            var extendedKey = $"Extended_{sessionKeyToUse}";
+            if (sessionData.ContainsKey(extendedKey))
+            {
+                var extendedValue = sessionData[extendedKey]?.ToString() ?? "";
+                if (HasValue(extendedValue)) return extendedValue;
+            }
+        }
+
+        return "";
+    }
+
+    // Get profile photo
+    var profilePhotoBase64 = GetMemberValue("profilePhoto");
+    var hasProfilePhoto = HasValue(profilePhotoBase64);
+    var defaultAvatar = "~/assets/profile/image.png";
+
+    // Generate avatar URL
+    string GetAvatarUrl()
+    {
+        if (hasProfilePhoto)
+        {
+            return $"data:image/jpeg;base64,{profilePhotoBase64}";
+        }
+        return Url.Content(defaultAvatar) + $"?v={DateTime.Now.Ticks}";
+    }
+}
+
+<section class="portal" dir="@dir" style="min-height:68vh">
+    <!-- ===== Section 1: Hero + Minis ===== -->
+    <div class="container-fluid px-sm-4 py-5 mx-0" style="background-color:#F3F3F3">
+        <div class="row g-3 g-md-4 align-items-stretch">
+
+            <!-- Hero (4 cols) -->
+<div class="col-12 col-xl-4 d-flex" dir="@(dir)">
+    <div class="card portal-hero text-white shadow-sm w-100 h-100 px-1 px-md-5">
+        <div class="card-body d-flex justify-content-between p-4 rounded-5 bg-primary @(isAr ? "flex-row text-start" : "flex-row text-end")">
+            @if (User?.Identity?.IsAuthenticated == true)
+            {
+                            @* var avatar = "~/assets/profile/image.png"; *@
+                            var avatar = GetAvatarUrl();
+                // ===== Name =====
+                var name = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    var gn = User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value ?? "";
+                    var sn = User.FindFirst(System.Security.Claims.ClaimTypes.Surname)?.Value ?? "";
+                    name = $"{gn} {sn}".Trim();
+                }
+                name = string.IsNullOrWhiteSpace(name) ? (isAr ? "المستخدم" : "User") : name;
+
+            
+
+                // ===== chevron direction (also flipped) =====
+                var chevronIcon = isAr ? "fa-chevron-left" : "fa-chevron-right";
+
+                
+                <div class="rounded-circle bg-white d-inline-flex align-items-center justify-content-center mx-1"
+                     style="width:146px;height:146px; box-shadow:0 6px 16px rgba(0,0,0,.15);">
+                  @*  <img src="@Url.Content(avatar)"*@
+                                <img src="@avatar"
+                                     alt="avatar"
+                         class="rounded-circle border border-2 border-primary d-inline-block"
+                         style="width:136px;height:136px;object-fit:cover;" />
+                </div>
+
+                <div class="flex-grow-1 mx-md-5 justify-content-center  text-start mt-md-4">
+                    <div class="fw-bold fs-5 mb-1 text-md-nowrap">
+                        @(isAr ? "مرحباً، " : "Welcome, ") @name
+                    </div>
+
+                    <div class="d-flex align-items-center mb-3 flex-row @(isAr ? "" : "")">
+                        <i class="fa-solid fa-envelope opacity-75 mx-2"></i>
+                        <span class="small opacity-90">@email</span>
+                    </div>
+
+                    <a class="btn btn-outline-light rounded-pill px-3" href="@U("profile")">
+                        <span class="mx-2">@(isAr ? "الملف الشخصي" : "Profile")</span>
+                                                <i class="fa-solid @chevronIcon"></i>
+                    </a>
+                </div>
+
+            }
+            else
+            {
+                <div class="flex-grow-1 @(isAr ? "me-3 text-start" : "ms-3 text-end")">
+                    <div class="opacity-75 fs-6 mb-1">@((isAr ? "مرحباً بك" : "Welcome"))</div>
+                    <div class="fw-semibold fs-5 fs-md-4 lh-sm">
+                        @((isAr ? "بوابتك إلى كل ما تحتاجه" : "Your gateway to everything"))
+                    </div>
+                </div>
+                <div class="rounded-circle bg-white d-inline-flex align-items-center justify-content-center  mx-1 portal-hero__avatar">
+                    <i class="fa-solid fa-user fa-2xl text-secondary"></i>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+            <!-- Minis (8 cols) -->
+            <div class="col-12 col-xl-8 d-flex  justify-content-center" dir="@dir">
+                <div class="row g-3 g-md-4 w-100">
+                    @foreach (var card in miniCards)
+                    {
+                        <div class="col-12 col-md-4 d-flex @(isAr ? "pe" : "ps")-md-0">
+                            <a href="@card.Url" class="text-decoration-none d-block flex-fill px-md-1">
+                                <div class="card portal-mini text-center position-relative shadow-sm h-100">
+                                    <div class="portal-mini__corner rounded position-absolute d-inline-flex align-items-center justify-content-center">
+                                        <i class="fa-solid @card.Icon fa-lg"></i>
+                                    </div>
+                                    <div class="card-body d-flex align-items-center justify-content-center p-4 rounded-3 home-mini-card">
+                                        <div class="fw-semibold fs-6 m-0">
+                                            @((isAr ? card.TextAr : card.TextEn))
+                                        </div>
+                                        <i class="  mx-4 fw-bolder fa-solid @((isAr ? "fa-angle-left" : "fa-angle-right"))"></i>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    @{
+
+        // var newsPage1 = UmbracoContextAccessor.GetRequiredUmbracoContext().Content.GetAtRoot()
+        //       .SelectMany(root => root.DescendantsOrSelf());
+        // .Where(x => x.ContentType.Alias == "newsPage")
+        // OfType<NewsPageModel>()
+        //  .FirstOrDefault();
+
+        var newsList = (UmbracoContext.Content.GetById(1130) as NewsPageModel)?.Cards?.Select(b => new CardModel(b.Content, PublishedValueFallback))
+        .OrderByDescending(c => c.Date)
+        .Take(3)
+        .ToList();
+
+        var articlesList = (UmbracoContext.Content.GetById(1157) as ArticlesPageModel)?.Cards?.Select(b => new CardModel(b.Content, PublishedValueFallback))
+        .OrderByDescending(c => c.Date)
+        .Take(3)
+        .ToList();
+
+        var quickAccessToServices = (UmbracoContext.Content.GetById(1082) as SystemLinksModel)?.Links?.Select(b => new SystemLinkItem(b.Content, PublishedValueFallback))
+        // .OrderBy(c => c.date)
+        .Where(c => c.ShowInQuickList)
+        .Where(c => c.IsVisible)
+        .Take(4)
+        .ToList();
+
+
+
+    }
+
+    <!-- ===== Section: Articles Slider (4 cols) + News Slider (4 cols) + Quick Access & Ads (4 cols) ===== -->
+    <div class="container-fluid">
+        <div class="row px-sm-4 g-3 g-md-4 mt-4 align-items-stretch">
+
+            <!-- Quick Access + Ads (4 cols) -->
+            <div class="col-12 col-lg-4 d-flex flex-column gap-4   border-1 rounded-3">
+
+                <!-- Quick Access Section -->
+                <div class=" p-2 px-4 pb-4 border-1 rounded-3" style="background-color:#f1eef6">
+                    <div class="d-flex align-items-center justify-content-between mb-3 ">
+                        <h3 class="h6 fw-bold mb-0 @(isAr ? "text-end" : "text-start")">
+                            @(isAr ? "الوصول السريع" : "Quick Access")
+                        </h3>
+                    </div>
+
+                    <div class="row g-3 justify-content-evenly text-center">
+                        @if (quickAccessToServices != null)
+                        {
+                            @foreach (var service in quickAccessToServices)
+                            {
+                                var link = service.Link;
+                                var href = link?.Url ?? "#";
+                                var target = (link?.Target?.ToLowerInvariant() == "_blank") ? "_blank" : "_self";
+                                var rel = target == "_blank" ? "noopener" : "";
+                                var imgUrl = service.Image?.GetCropUrl() ?? "";
+
+                                <div class="col-3">
+                                    <div class="position-relative">
+                                        <!-- Rounded Shadow Box for Logo -->
+                                        <div class="bg-white shadow-lg rounded-3 border-0 mb-1 d-flex align-items-center justify-content-center" style="height: 80px;">
+                                            @if (!string.IsNullOrEmpty(imgUrl))
+                                            {
+                                                <img src="@imgUrl" alt="@service.Title" class="img-fluid" >
+                                                @* style = "max-height: 60px; max-width: 80px;" *@
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-gear-fill text-primary fs-1"></i>
+                                            }
+                                        </div>
+
+                                        <!-- Title Under the Box -->
+                                        <h6 class="fw-semibold small mb-0 text-center">
+                                            @service.Title
+                                        </h6>
+
+                                        <!-- Invisible Link Overlay -->
+                                        <a href="@href" target="@target" rel="@rel" class="stretched-link" aria-label="@service.Title"></a>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+
+                <!-- Ads Section -->
+                <!-- Left: slider (8 cols) -->
+                @* class="flex-fill " *@
+                <div style="overflow: hidden;text-wrap:wrap !important;">
+                    @await Html.PartialAsync("~/Views/Partials/Sections/_AdsCardsSlider.cshtml", Model)
+                </div>
+                <!-- Ads Section -->
+                @*  <div class="flex-fill">
+                    @foreach (var ad in ads)
+                    {
+                        <div class="card portal-tile @ad.TileMod shadow-sm mb-3" style="min-height: 7rem; border-radius: 12px;">
+                            <div class="card-body d-flex align-items-center justify-content-between p-3">
+                                <!-- Group: icon + title -->
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="portal-tile__icon d-inline-flex align-items-center justify-content-center">
+                                        <i class="fa-solid @ad.Icon"></i>
+                                    </div>
+                                    <h6 class="fw-semibold mb-0 small">
+                                        @((isAr ? ad.TitleAr : ad.TitleEn))
+                                    </h6>
+                                </div>
+                                <!-- Group: button -->
+                                <a href="@ad.Url" class="btn btn-sm portal-btn-soft fw-semibold px-3 py-1 small">
+                                    @((isAr ? ad.CtaAr : ad.CtaEn))
+                                    <i class="fa-solid @((isAr ? "fa-chevron-left" : "fa-chevron-right")) ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+ *@
+
+
+            </div>
+
+
+            <!-- News Slider (4 cols) -->
+            <!-- News Slider (4 cols) -->
+            <div class="col-12 col-lg-4 d-flex flex-column">
+                <div class="">
+                    <!-- News Header -->
+                    <div class="row align-items-center justify-content-between mb-3">
+                        <a href="/@(isAr ? "ar" : "en")/news" class="text-decoration-none col-6">
+                            <h3 class="h5 fw-bold mb-0 @(isAr ? "text-end" : "text-start")">
+                                @(isAr ? "الأخبار" : "News")
+                            </h3>
+                        </a>
+
+                        <!-- Navigation Buttons -->
+                        <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+                            <button id="news-prev" type="button"
+                                    class="ph-btn ph-btn--icon d-flex align-items-center justify-content-center"
+                                    aria-label="Previous">
+                                <i class="fa-solid @(isAr ? "fa-chevron-right" : "fa-chevron-left")"></i>
+                            </button>
+                            <button id="news-next" type="button"
+                                    class="ph-btn ph-btn--icon d-flex align-items-center justify-content-center"
+                                    aria-label="Next">
+                                <i class="fa-solid @(isAr ? "fa-chevron-left" : "fa-chevron-right")"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- News Swiper -->
+                    <div class="swiper @(isAr ? "text-end" : "text-start")" id="news-swiper" dir="@(isAr ? "rtl" : "ltr")">
+                        <div class="swiper-wrapper">
+                            @if (newsList != null)
+                            {
+                                @foreach (var news in newsList)
+                                {
+                                    var img = news.Image;
+                                    var url = $"/{(isAr ? "ar" : "en")}/news/details/{(news.Title?.ToUrlSegment(ShortStringHelper, (isAr ? "ar" : "en")) ?? "news")}/{news.Key}";
+
+                                    <div class="swiper-slide">
+                                        <div class="card h-100 shadow-sm border-1 rounded-3">
+                                            @if (img != null)
+                                            {
+                                                <!-- Use Bootstrap ratio instead of fixed height -->
+                                                <div class="ratio ratio-16x9 overflow-hidden">
+                                                    <img src="@img.Url()" alt="@img.Name"
+                                                         class="card-img-top w-100 h-100 object-fit-cover"
+                                                         loading="lazy"
+                                                         style="border-radius: 0.5rem 0.5rem 0 0;" />
+                                                </div>
+                                            }
+                                            <div class="card-body p-3 d-flex flex-column">
+                                                @if (news.Date != default)
+                                                {
+                                                    <div class="text-muted small mb-2">
+                                                        @news.Date.ToString("dd MMM yyyy", (isAr ? new CultureInfo("ar") : new CultureInfo("en")))
+                                                    </div>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(news.Title))
+                                                {
+                                                    <a href="@url" class="text-decoration-none">
+                                                        <h5 class="card-title h6 fw-semibold mb-2 text-dark" style="line-height: 1.4;">@news.Title</h5>
+                                                    </a>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(news.Description))
+                                                {
+                                                    <div style="min-height: 5rem;">
+                                                        <p class="card-text text-muted small"
+                                                           style="line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                                            @news.Description
+                                                        </p>
+                                                   </div>
+                                                }
+                                                <div class="mt-3 mt-md-auto pb-2">
+                                                    <a href="@url" class="btn btn-outline-primary rounded-pill d-inline-flex align-items-center gap-2">
+                                                        @(isAr ? "قراءة المزيد" : "Read more")
+                                                        <i class="bi @(isAr ? "bi-chevron-left" : "bi-chevron-right") ms-1"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Articles Slider (4 cols) -->
+            <div class="col-12 col-lg-4 d-flex flex-column">
+                <div class="">
+                    <!-- Articles Header -->
+                    <div class="row align-items-center justify-content-between mb-3">
+                        <a href="/@(isAr ? "ar" : "en")/articles" class="text-decoration-none col-6">
+                            <h3 class="h5 fw-bold mb-0 @(isAr ? "text-end" : "text-start")">
+                                @(isAr ? "المقالات" : "Articles")
+                            </h3>
+                        </a>
+
+                        <!-- Navigation Buttons -->
+                        <div class="d-flex align-items-center gap-2 col-6 justify-content-end">
+                            <button id="articles-prev" type="button"
+                                    class="ph-btn ph-btn--icon d-flex align-items-center justify-content-center"
+                                    aria-label="Previous">
+                                <i class="fa-solid @(isAr ? "fa-chevron-right" : "fa-chevron-left")"></i>
+                            </button>
+                            <button id="articles-next" type="button"
+                                    class="ph-btn ph-btn--icon d-flex align-items-center justify-content-center"
+                                    aria-label="Next">
+                                <i class="fa-solid @(isAr ? "fa-chevron-left" : "fa-chevron-right")"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Articles Swiper -->
+                    <div class="swiper @(isAr ? "text-end" : "text-start")" id="articles-swiper" dir="@(isAr ? "rtl" : "ltr")">
+                        <div class="swiper-wrapper">
+                            @if (articlesList != null)
+                            {
+                                @foreach (var article in articlesList)
+                                {
+                                    var img = article.Image;
+                                    var url = $"/{(isAr ? "ar" : "en")}/articles/details/{(article.Title?.ToUrlSegment(ShortStringHelper, (isAr ? "ar" : "en")) ?? "article")}/{article.Key}";
+
+                                    <div class="swiper-slide">
+                                        <div class="card h-100 shadow-sm border-0 rounded-3">
+                                            @if (img != null)
+                                            {
+                                                <!-- Use Bootstrap ratio instead of fixed height -->
+                                                <div class="ratio ratio-16x9 overflow-hidden">
+                                                    <img src="@img.Url()" alt="@img.Name"
+                                                         class="card-img-top w-100 h-100 object-fit-cover"
+                                                         loading="lazy"
+                                                         style="border-radius: 0.5rem 0.5rem 0 0;" />
+                                                </div>
+                                            }
+                                            <div class="card-body p-3 d-flex flex-column">
+                                                @if (article.Date != default)
+                                                {
+                                                    <div class="text-muted small mb-2">
+                                                        @article.Date.ToString("dd MMM yyyy", (isAr ? new CultureInfo("ar") : new CultureInfo("en")))
+                                                    </div>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(article.Title))
+                                                {
+                                                    <a href="@url" class="text-decoration-none">
+                                                        <h5 class="card-title h6 fw-semibold mb-2 text-dark" style="line-height: 1.4;">@article.Title</h5>
+                                                    </a>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(article.Description))
+                                                {
+                                                    <div style=" min-height: 5rem;">
+                                                        <p class="card-text text-muted small"
+                                                           style="line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                                            @article.Description
+                                                        </p>
+                                                 </div>
+                                                }
+
+
+                                                <!-- View all button -->
+                               
+                                                <div class="mt-3 mt-md-auto pb-2 pt-md-4">
+                                                    <a href="@url" class="btn btn-outline-primary rounded-pill d-inline-flex align-items-center gap-2">
+                                                        @(isAr ? "قراءة المزيد" : "Read more")
+                                                        <i class="bi @(isAr ? "bi-chevron-left" : "bi-chevron-right") ms-1"></i>
+                                                    </a>
+                                                </div>
+
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Swiper Initialization Script -->
+    <script>
+        (function() {
+            function initSwipers() {
+                // Articles Swiper
+                const articlesEl = document.getElementById('articles-swiper');
+                if (articlesEl && !articlesEl._inited) {
+                    articlesEl._inited = true;
+                    new Swiper(articlesEl, {
+                        slidesPerView: 1,
+                        spaceBetween: 16,
+                        speed: 600,
+                        grabCursor: true,
+                        loop: true,
+                        navigation: {
+                            nextEl: '#articles-next',
+                            prevEl: '#articles-prev'
+                        },
+                        breakpoints: {
+                            768: { slidesPerView: 1 }
+                        }
+                    });
+                }
+
+                // News Swiper
+                const newsEl = document.getElementById('news-swiper');
+                if (newsEl && !newsEl._inited) {
+                    newsEl._inited = true;
+                    new Swiper(newsEl, {
+                        slidesPerView: 1,
+                        spaceBetween: 16,
+                        speed: 600,
+                        grabCursor: true,
+                        loop: true,
+                        navigation: {
+                            nextEl: '#news-next',
+                            prevEl: '#news-prev'
+                        },
+                        breakpoints: {
+                            768: { slidesPerView: 1 }
+                        }
+                    });
+                }
+            }
+
+            // Initialize when Swiper is loaded
+            if (typeof Swiper !== 'undefined') {
+                setTimeout(initSwipers, 100);
+            } else {
+                let attempts = 0;
+                const checkSwiper = setInterval(function() {
+                    attempts++;
+                    if (typeof Swiper !== 'undefined') {
+                        clearInterval(checkSwiper);
+                        setTimeout(initSwipers, 100);
+                    } else if (attempts >= 50) {
+                        clearInterval(checkSwiper);
+                        console.error('Swiper library failed to load');
+                    }
+                }, 100);
+            }
+        })();
+    </script>
+
+    <!-- Custom Styles -->
+    <style>
+        .swiper-slide {
+            height: auto;
+        }
+
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+            }
+
+        .portal-tile__icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--bs-primary-bg-subtle);
+            color: var(--bs-primary);
+        }
+
+        .portal-btn-soft {
+            background: var(--bs-primary-bg-subtle);
+            color: var(--bs-primary);
+            border: none;
+            border-radius: 6px;
+        }
+
+            .portal-btn-soft:hover {
+                background: var(--bs-primary);
+                color: white;
+            }
+
+        @@media (max-width: 991.98px) {
+            .col-lg-4
+
+        {
+            margin-bottom: 2rem;
+        }
+
+        }
+    </style>
+
+</section>
+
+
+
